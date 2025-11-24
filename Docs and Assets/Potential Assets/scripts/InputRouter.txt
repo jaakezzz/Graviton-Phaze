@@ -1,0 +1,48 @@
+public sealed class InputRouter : MonoBehaviour
+{
+    private GravitonInput input;            // generated from the asset
+    [SerializeField] ShipController ship;
+    [SerializeField] ProbeAimer probeAimer;
+
+    private Quaternion calib = Quaternion.identity;   // neutral device orientation
+
+    void Awake(){
+        input = new GravitonInput();
+    }
+
+    void OnEnable(){
+        // PLAN
+        input.Plan.Aim.performed += ctx => probeAimer.SetAimPosition(ctx.ReadValue<Vector2>());
+        input.Plan.Fire.performed += _ => probeAimer.Fire();
+        input.Plan.SwapProbe.performed += _ => probeAimer.CycleProbe();
+
+        // FLY
+        input.Fly.Thrust.performed += _ => ship.SetThrust(true);
+        input.Fly.Thrust.canceled  += _ => ship.SetThrust(false);
+        input.Fly.Calibrate.performed += _ => calib = ReadAttitude(); // optional UI button
+
+        input.Enable();
+    }
+
+    void OnDisable(){ input.Disable(); }
+
+    // Called from ShipController.Update
+    public Vector2 ReadTurnVector(){
+        var q = ReadAttitude();                 // AttitudeSensor if available, else Accelerometer fallback
+        var yaw = (Quaternion.Inverse(calib) * q).eulerAngles.y;     // derive yaw relative to calibration
+        float turnX = Mathf.DeltaAngle(0f, yaw) / 45f;               // scale to [-1..1] for ~±45° tilt
+        return new Vector2(turnX, 0f);          // our game only needs yaw (left/right)
+    }
+
+    private static Quaternion ReadAttitude(){
+        #if UNITY_INPUT_SYSTEM
+        if (UnityEngine.InputSystem.AttitudeSensor.current != null)
+            return UnityEngine.InputSystem.AttitudeSensor.current.attitude.ReadValue();
+        // Simple fallback using accelerometer "gravity" for portrait devices:
+        var a = UnityEngine.InputSystem.Accelerometer.current?.acceleration.ReadValue() ?? Vector3.zero;
+        return Quaternion.FromToRotation(Vector3.up, a);
+        #else
+        return Quaternion.identity;
+        #endif
+    }
+}

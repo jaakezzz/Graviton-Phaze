@@ -1,0 +1,38 @@
+public class Probe : MonoBehaviour
+{
+    public bool Docked;                  // set true when Auto-Dock snaps it
+    public Vector2 Vel;                  // your kinematic velocity (units/s)
+
+    [Header("Stationary fail")]
+    public float zeroSpeedEps = 0.05f;   // u/s; treat speeds below this as "stopped"
+    public float stationaryTimeout = 0.6f; // seconds to wait before destroying
+    public float spawnGrace = 0.15f;     // avoid killing right after spawn/bounce
+
+    private float stationaryTimer = 0f;
+    private float lifeTimer = 0f;
+
+    void Update()
+    {
+        float dt = Time.deltaTime;
+        lifeTimer += dt;
+
+        // ... your kinematic integration updates Vel and transform.position before this ...
+
+        if (!Docked && lifeTimer > spawnGrace)
+        {
+            if (Vel.sqrMagnitude <= zeroSpeedEps * zeroSpeedEps)
+            {
+                stationaryTimer += dt;
+                if (stationaryTimer >= stationaryTimeout)
+                {
+                    Destroy(gameObject);   // probe fizzles out; not docked
+                    return;
+                }
+            }
+            else
+            {
+                stationaryTimer = 0f;      // moving again → reset
+            }
+        }
+    }
+}

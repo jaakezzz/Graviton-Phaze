@@ -1,0 +1,25 @@
+// ShipController (gyro + touch thrust)
+public sealed class ShipController : MonoBehaviour
+{
+    public float thrustAccel = 10f;
+    public float fuel = 1f;
+    public InputRouter input;
+
+    public void SetThrust(bool on) => _thrustOn = on;
+    bool _thrustOn;
+
+    void Update(){
+        // heading from Input System gyro/attitude
+        Vector2 steer = input.ReadTurnVector();                 // [-1..1]
+        Vector2 heading = new Vector2(1, 0).Rotate(steer.x * maxYawDegrees); // your helper
+
+        if (_thrustOn && fuel > 0f){
+            vel += heading.normalized * thrustAccel * Time.deltaTime;
+            fuel -= fuelBurnRate * Time.deltaTime;
+        }
+
+        // then your kinematic integrate:
+        vel += AccelAt(pos, vel, Time.time) * Time.deltaTime;
+        pos += vel * Time.deltaTime;
+    }
+}
