@@ -6,7 +6,7 @@ public class UniformPatch2D : MonoBehaviour
     public static readonly HashSet<UniformPatch2D> All = new();
 
     [Header("Uniform acceleration")]
-    public Vector2 E = new Vector2(0f, 2.0f);   // up-flow by default (u/s^2)
+    public Vector2 E = new Vector2(0f, 0.5f);   // up-flow by default (u/s^2)
 
     [Header("Region")]
     public float radius = 6f;                   // circular patch

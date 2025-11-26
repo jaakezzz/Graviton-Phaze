@@ -5,9 +5,9 @@ public class GaussStabilizer2D : MonoBehaviour
 {
     public static readonly HashSet<GaussStabilizer2D> All = new();
 
-    public float U0 = 30f;   // depth/strength
-    public float R = 3f;    // radius scale
-    public float aMax = 15f; // accel clamp
+    public float U0 = 13f;   // depth/strength
+    public float R = 1f;    // radius scale
+    public float aMax = 5f; // accel clamp
 
     public Vector2 AccelAt(Vector2 x)
     {

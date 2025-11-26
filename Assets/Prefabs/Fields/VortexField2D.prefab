@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af841e88d456f03409f7c1076ce945a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VortexField2D
-  omega: 1.6
-  R: 6
-  aMax: 2.5
+  omega: 2
+  R: 1
+  aMax: 3
   clockwise: 0

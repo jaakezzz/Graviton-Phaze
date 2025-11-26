@@ -44,6 +44,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0f2993a4763d734595fee367edb399e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GaussStabilizer2D
-  U0: 30
-  R: 3
-  aMax: 15
+  U0: 13
+  R: 1
+  aMax: 5

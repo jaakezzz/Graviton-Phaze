@@ -6,7 +6,7 @@ public class AutoDockNode : MonoBehaviour
     public static readonly HashSet<AutoDockNode> All = new();
 
     [Header("Docking")]
-    public float snapRadius = 2.5f;
+    public float snapRadius = 0.5f;
 
     [Header("On Dock ? Spawn Prefabs (optional)")]
     public GaussStabilizer2D stabilizerPrefab;

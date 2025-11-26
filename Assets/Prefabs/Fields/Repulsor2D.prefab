@@ -45,5 +45,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GravityWell2D
   S: -6
-  eps: 1
-  aMax: 30
+  eps: 0.5
+  aMax: 9

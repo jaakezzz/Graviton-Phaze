@@ -7,24 +7,84 @@
             "id": "786731b7-f3a2-4076-b8b4-eeabdb30a71f",
             "actions": [
                 {
-                    "name": "New action",
+                    "name": "Thrust",
                     "type": "Button",
                     "id": "5c06d4cd-f04a-49c7-b083-2fb6d9e6e37f",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Burst",
+                    "type": "Button",
+                    "id": "c1786161-a248-45b3-94c8-3d05adfb4684",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Sustained",
+                    "type": "Button",
+                    "id": "8c190c69-9a20-4983-a245-664cb78a3047",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Turn",
+                    "type": "Value",
+                    "id": "5834abce-36b9-46f9-b14f-57ff4e16a32b",
+                    "expectedControlType": "Quaternion",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
                 {
                     "name": "",
                     "id": "1b73b200-988e-4202-b753-523ae4cfd326",
-                    "path": "",
+                    "path": "<Touchscreen>/primaryTouch/press",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "New action",
+                    "action": "Thrust",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "790df5d1-1780-4861-add9-c3de4f358726",
+                    "path": "<Touchscreen>/primaryTouch/tap",
+                    "interactions": "MultiTap",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Burst",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0f703f78-9a7e-45a8-8c39-66d63523f158",
+                    "path": "<Touchscreen>/primaryTouch/press",
+                    "interactions": "Hold(duration=0.35)",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Sustained",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "38a71e9d-b4a7-461a-a94c-0031246c27ed",
+                    "path": "<AttitudeSensor>/attitude",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Turn",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

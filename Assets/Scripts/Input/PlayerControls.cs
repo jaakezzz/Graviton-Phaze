@@ -93,24 +93,84 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             ""id"": ""786731b7-f3a2-4076-b8b4-eeabdb30a71f"",
             ""actions"": [
                 {
-                    ""name"": ""New action"",
+                    ""name"": ""Thrust"",
                     ""type"": ""Button"",
                     ""id"": ""5c06d4cd-f04a-49c7-b083-2fb6d9e6e37f"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Burst"",
+                    ""type"": ""Button"",
+                    ""id"": ""c1786161-a248-45b3-94c8-3d05adfb4684"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Sustained"",
+                    ""type"": ""Button"",
+                    ""id"": ""8c190c69-9a20-4983-a245-664cb78a3047"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Turn"",
+                    ""type"": ""Value"",
+                    ""id"": ""5834abce-36b9-46f9-b14f-57ff4e16a32b"",
+                    ""expectedControlType"": ""Quaternion"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
                 {
                     ""name"": """",
                     ""id"": ""1b73b200-988e-4202-b753-523ae4cfd326"",
-                    ""path"": """",
+                    ""path"": ""<Touchscreen>/primaryTouch/press"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""New action"",
+                    ""action"": ""Thrust"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""790df5d1-1780-4861-add9-c3de4f358726"",
+                    ""path"": ""<Touchscreen>/primaryTouch/tap"",
+                    ""interactions"": ""MultiTap"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Burst"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0f703f78-9a7e-45a8-8c39-66d63523f158"",
+                    ""path"": ""<Touchscreen>/primaryTouch/press"",
+                    ""interactions"": ""Hold(duration=0.35)"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Sustained"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""38a71e9d-b4a7-461a-a94c-0031246c27ed"",
+                    ""path"": ""<AttitudeSensor>/attitude"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Turn"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -189,7 +249,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
 }");
         // Fly
         m_Fly = asset.FindActionMap("Fly", throwIfNotFound: true);
-        m_Fly_Newaction = m_Fly.FindAction("New action", throwIfNotFound: true);
+        m_Fly_Thrust = m_Fly.FindAction("Thrust", throwIfNotFound: true);
+        m_Fly_Burst = m_Fly.FindAction("Burst", throwIfNotFound: true);
+        m_Fly_Sustained = m_Fly.FindAction("Sustained", throwIfNotFound: true);
+        m_Fly_Turn = m_Fly.FindAction("Turn", throwIfNotFound: true);
         // Plan
         m_Plan = asset.FindActionMap("Plan", throwIfNotFound: true);
         m_Plan_AimPoint = m_Plan.FindAction("AimPoint", throwIfNotFound: true);
@@ -276,7 +339,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     // Fly
     private readonly InputActionMap m_Fly;
     private List<IFlyActions> m_FlyActionsCallbackInterfaces = new List<IFlyActions>();
-    private readonly InputAction m_Fly_Newaction;
+    private readonly InputAction m_Fly_Thrust;
+    private readonly InputAction m_Fly_Burst;
+    private readonly InputAction m_Fly_Sustained;
+    private readonly InputAction m_Fly_Turn;
     /// <summary>
     /// Provides access to input actions defined in input action map "Fly".
     /// </summary>
@@ -289,9 +355,21 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// </summary>
         public FlyActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
         /// <summary>
-        /// Provides access to the underlying input action "Fly/Newaction".
+        /// Provides access to the underlying input action "Fly/Thrust".
         /// </summary>
-        public InputAction @Newaction => m_Wrapper.m_Fly_Newaction;
+        public InputAction @Thrust => m_Wrapper.m_Fly_Thrust;
+        /// <summary>
+        /// Provides access to the underlying input action "Fly/Burst".
+        /// </summary>
+        public InputAction @Burst => m_Wrapper.m_Fly_Burst;
+        /// <summary>
+        /// Provides access to the underlying input action "Fly/Sustained".
+        /// </summary>
+        public InputAction @Sustained => m_Wrapper.m_Fly_Sustained;
+        /// <summary>
+        /// Provides access to the underlying input action "Fly/Turn".
+        /// </summary>
+        public InputAction @Turn => m_Wrapper.m_Fly_Turn;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -318,9 +396,18 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         {
             if (instance == null || m_Wrapper.m_FlyActionsCallbackInterfaces.Contains(instance)) return;
             m_Wrapper.m_FlyActionsCallbackInterfaces.Add(instance);
-            @Newaction.started += instance.OnNewaction;
-            @Newaction.performed += instance.OnNewaction;
-            @Newaction.canceled += instance.OnNewaction;
+            @Thrust.started += instance.OnThrust;
+            @Thrust.performed += instance.OnThrust;
+            @Thrust.canceled += instance.OnThrust;
+            @Burst.started += instance.OnBurst;
+            @Burst.performed += instance.OnBurst;
+            @Burst.canceled += instance.OnBurst;
+            @Sustained.started += instance.OnSustained;
+            @Sustained.performed += instance.OnSustained;
+            @Sustained.canceled += instance.OnSustained;
+            @Turn.started += instance.OnTurn;
+            @Turn.performed += instance.OnTurn;
+            @Turn.canceled += instance.OnTurn;
         }
 
         /// <summary>
@@ -332,9 +419,18 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="FlyActions" />
         private void UnregisterCallbacks(IFlyActions instance)
         {
-            @Newaction.started -= instance.OnNewaction;
-            @Newaction.performed -= instance.OnNewaction;
-            @Newaction.canceled -= instance.OnNewaction;
+            @Thrust.started -= instance.OnThrust;
+            @Thrust.performed -= instance.OnThrust;
+            @Thrust.canceled -= instance.OnThrust;
+            @Burst.started -= instance.OnBurst;
+            @Burst.performed -= instance.OnBurst;
+            @Burst.canceled -= instance.OnBurst;
+            @Sustained.started -= instance.OnSustained;
+            @Sustained.performed -= instance.OnSustained;
+            @Sustained.canceled -= instance.OnSustained;
+            @Turn.started -= instance.OnTurn;
+            @Turn.performed -= instance.OnTurn;
+            @Turn.canceled -= instance.OnTurn;
         }
 
         /// <summary>
@@ -494,12 +590,33 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     public interface IFlyActions
     {
         /// <summary>
-        /// Method invoked when associated input action "New action" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// Method invoked when associated input action "Thrust" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnNewaction(InputAction.CallbackContext context);
+        void OnThrust(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Burst" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnBurst(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Sustained" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSustained(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Turn" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnTurn(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Plan" which allows adding and removing callbacks.

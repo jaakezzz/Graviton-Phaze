@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a5025d1a3818754bb8f128d6d665410, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UniformPatch2D
-  E: {x: 0, y: 10}
+  E: {x: 0, y: 0.5}
   radius: 2
   smoothEdges: 1
   R: 2

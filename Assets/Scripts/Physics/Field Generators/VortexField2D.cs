@@ -6,8 +6,8 @@ public class VortexField2D : MonoBehaviour
     public static readonly HashSet<VortexField2D> All = new();
 
     [Header("Swirl (velocity-dependent)")]
-    public float omega = 1.6f;    // turn rate scale (rad/s). Bigger = tighter curve
-    public float R = 6f;      // Gaussian radius of influence
+    public float omega = 2f;    // turn rate scale (rad/s). Bigger = tighter curve
+    public float R = 1f;      // Gaussian radius of influence
     public float aMax = 3f;      // accel clamp for comfort
     public bool clockwise = true; // flip swirl direction
 

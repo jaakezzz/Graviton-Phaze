@@ -6,9 +6,9 @@ public class GravityWell2D : MonoBehaviour
     public static readonly HashSet<GravityWell2D> All = new();
 
     [Header("Well Params")]
-    public float S = 25f;      // strength
-    public float eps = 1f;     // soft-core (prevents blowup)
-    public float aMax = 30f;   // accel clamp (comfort)
+    public float S = 12f;      // strength
+    public float eps = 0.3f;     // soft-core (prevents blowup)
+    public float aMax = 9f;   // accel clamp (comfort)
 
     public Vector2 AccelAt(Vector2 x)
     {

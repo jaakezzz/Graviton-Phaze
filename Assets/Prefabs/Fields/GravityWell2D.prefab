@@ -44,6 +44,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 542922890bf61e341a0177ba0fb40bcc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GravityWell2D
-  S: 25
-  eps: 1
-  aMax: 30
+  S: 12
+  eps: 0.3
+  aMax: 9
