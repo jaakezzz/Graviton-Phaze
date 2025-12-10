@@ -55,6 +55,15 @@ public class PlanInputHandler : MonoBehaviour
         return results.Count > 0;
     }
 
+    // --- Helpers: get pointer position from the device that actually fired the action ---
+    Vector2 GetScreenPos(InputAction.CallbackContext ctx)
+    {
+        var dev = ctx.control?.device;
+        if (dev is Touchscreen ts) return ts.primaryTouch.position.ReadValue();
+        if (dev is Mouse m) return m.position.ReadValue();
+        return Pointer.current != null ? Pointer.current.position.ReadValue() : currentPosScreen;
+    }
+
     // --- Helpers: screen/world & drag?v0 ---
     Vector2 ScreenToWorld(Vector2 pScreen)
     {
@@ -95,7 +104,14 @@ public class PlanInputHandler : MonoBehaviour
     // <Touchscreen>/primaryTouch/press
     public void OnAimHold(InputAction.CallbackContext ctx)
     {
-        Vector2 screenPos = Touchscreen.current?.primaryTouch.position.ReadValue() ?? currentPosScreen;
+        // diag: see which interactions/device fired and if UI is blocking
+        string configured = ctx.action?.interactions ?? "(none)";
+        string firedBy = ctx.interaction != null ? ctx.interaction.GetType().Name : "(none)";
+        string dev = ctx.control?.device?.layout ?? "(no device)";
+        Vector2 dbgSp = GetScreenPos(ctx);
+        Debug.Log($"[Plan] AimHold phase={ctx.phase} configured=[{configured}] firedBy={firedBy} dev={dev} overUI={IsOverUI(dbgSp)}");
+
+        Vector2 screenPos = dbgSp;
 
         if (ctx.started)
         {
@@ -139,6 +155,9 @@ public class PlanInputHandler : MonoBehaviour
 
         Vector2 v0 = MapDragToVelocity(aimOriginScreen, currentPosScreen);
         Vector2 originWorld = ScreenToWorld(aimOriginScreen);
+
+        // diag: see raw screen & computed world pos
+        Debug.Log($"[Plan] AimPoint phase={ctx.phase} screen={currentPosScreen} world={originWorld}");
 
         // Draw a simple preview (currently coasts; you’ll plug physics in Step 2B)
         predictor?.Draw(originWorld, v0);

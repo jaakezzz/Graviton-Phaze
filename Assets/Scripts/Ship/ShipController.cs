@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using System.Linq;
+using UnityEngine.Events;
 
 public class ShipController : MonoBehaviour
 {
@@ -12,11 +14,11 @@ public class ShipController : MonoBehaviour
     [SerializeField] Canvas uiCanvas;  // to ignore touches on UI (Pause, etc.)
 
     [Header("Thrust")]
-    [SerializeField] float thrustAccel = 10f;     // u/s^2
-    [SerializeField] float sustainBoost = 0.5f;   // +50% accel while Sustained is active
-    [SerializeField] float burstImpulse = 6f;     // u/s instant push on Burst
-    [SerializeField] float maxSpeed = 12f;        // speed clamp
-    [SerializeField] float linearDrag = 0.05f;    // gentle damp each tick
+    [SerializeField] float thrustAccel = 1f;     // u/s^2
+    [SerializeField] float sustainBoost = 0.25f;   // +25% accel while Sustained is active
+    [SerializeField] float burstImpulse = 2.25f;     // u/s instant push on Burst
+    [SerializeField] float maxSpeed = 2.25f;        // speed clamp
+    [SerializeField] float linearDrag = 0.02f;    // gentle damp each tick
 
     [Header("Steer — rate from twist (Attitude)")]
     [SerializeField] bool invertSteer = true;  // flip if CW/CCW feels wrong
@@ -24,6 +26,27 @@ public class ShipController : MonoBehaviour
     [SerializeField] float turnRatePerDeg = 6f;    // deg/s per deg of tilt (e.g., 30° -> 180°/s)
     [SerializeField] float maxTurnRate = 720f;  // deg/s cap (2 rev/s)
     [SerializeField] float tiltSmooth = 12f;   // larger = snappier smoothing
+
+    [Header("Fuel")]
+    [SerializeField] float startFuel = 5f;     // set per level (for now; will set via level config later)
+    [SerializeField] float fuel = 5f;          // runtime
+    [SerializeField] float burnRate = 1.5f;     // units per second while thrusting
+    [SerializeField] float sustainedMult = 1.5f;// extra burn when Sustained is active
+    [SerializeField] float burstCost = 4.5f;      // one-shot cost on Burst
+    [SerializeField] float minFuelToThrust = 0.05f;
+
+    [Header("Launch")]
+    [SerializeField] bool lockUntilThrust = true; // start pinned until player uses fuel
+    bool launched = false;
+    Vector2 spawnPos;
+
+
+    [System.Serializable] public class FuelEvent : UnityEvent<float, float> { } // (current,max)
+    public FuelEvent onFuelChanged = new FuelEvent();
+    public UnityEvent onOutOfFuel = new UnityEvent();
+
+    public float Fuel => fuel;
+    public float FuelMax => startFuel;
 
     // runtime
     Vector2 vel;
@@ -39,18 +62,68 @@ public class ShipController : MonoBehaviour
     GraphicRaycaster raycaster;
     EventSystem evt;
 
+    void ResolveRefs()
+    {
+        // FieldManager
+        if (!fields)
+            fields = FieldManager.Instance
+                  ?? FindAnyObjectByType<FieldManager>(FindObjectsInactive.Include);
+
+        // Camera
+        if (!cam)
+            cam = Camera.main
+               ?? FindAnyObjectByType<Camera>(FindObjectsInactive.Include);
+
+        // Canvas (prefer Fly HUD via marker)
+        if (!uiCanvas)
+        {
+            var flyMarker = FindAnyObjectByType<FlyHUDMarker>(FindObjectsInactive.Exclude);
+            if (flyMarker)
+                uiCanvas = flyMarker.GetComponentInParent<Canvas>(true);
+
+            if (!uiCanvas)
+            {
+                // Fallback: first active Canvas with a GraphicRaycaster
+                var canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+                uiCanvas = canvases.FirstOrDefault(c => c.isActiveAndEnabled && c.GetComponent<GraphicRaycaster>());
+            }
+        }
+
+        // Support components
+        if (uiCanvas && raycaster == null) raycaster = uiCanvas.GetComponent<GraphicRaycaster>();
+        if (evt == null) evt = EventSystem.current ?? FindAnyObjectByType<EventSystem>(FindObjectsInactive.Include);
+    }
+
     void Awake()
     {
         if (!cam) cam = Camera.main;
+        ResolveRefs();
         if (uiCanvas) raycaster = uiCanvas.GetComponent<GraphicRaycaster>();
         evt = EventSystem.current;
     }
 
+    public void SetFuel(float amount)
+    {
+        startFuel = Mathf.Max(0f, amount);
+        fuel = Mathf.Clamp(amount, 0f, startFuel);
+        onFuelChanged.Invoke(fuel, startFuel);
+    }
+
     void OnEnable()
     {
+        ResolveRefs();
+
         // Ensure the sensor is on when Fly map enables
         if (AttitudeSensor.current != null && !AttitudeSensor.current.enabled)
             InputSystem.EnableDevice(AttitudeSensor.current);
+
+        // ensure fuel initialized when ship spawns/enables
+        if (fuel <= 0f || fuel > startFuel) fuel = startFuel;
+        onFuelChanged.Invoke(fuel, startFuel);
+
+        // launch gate
+        spawnPos = transform.position;
+        launched = !lockUntilThrust ? true : false;
     }
 
     // ===== Input (Fly map) =====
@@ -79,7 +152,11 @@ public class ShipController : MonoBehaviour
     public void OnBurst(InputAction.CallbackContext ctx)
     {
         if (!ctx.performed) return;
+        if (fuel < burstCost) return;                 // not enough juice
+        fuel -= burstCost;
+        launched = true;
         vel += HeadingDir() * burstImpulse;
+        onFuelChanged.Invoke(fuel, startFuel);
     }
 
     // Turn: Value (Quaternion) from <AttitudeSensor>/attitude
@@ -126,14 +203,32 @@ public class ShipController : MonoBehaviour
         float dt = Time.fixedDeltaTime;
         Vector2 pos = transform.position;
 
+        // If we’re locked, pin position & zero velocity (but still allow rotation later)
+        if (!launched)
+        {
+            vel = Vector2.zero;
+            transform.position = spawnPos;
+        }
+
         // Sum fields
         Vector2 a = fields ? fields.AccelAt(pos, vel, Time.time) : Vector2.zero;
 
+        // thrust only if we have fuel
+        bool canThrust = thrusting && fuel > minFuelToThrust;
+
         // Add thrust along heading
-        if (thrusting)
+        if (canThrust)
         {
+            launched = true;
             float acc = sustained ? thrustAccel * (1f + sustainBoost) : thrustAccel;
             a += HeadingDir() * acc;
+
+            // consume fuel
+            float burn = burnRate * (sustained ? sustainedMult : 1f) * dt;
+            float before = fuel;
+            fuel = Mathf.Max(0f, fuel - burn);
+            if (fuel <= 0f && before > 0f) onOutOfFuel.Invoke();
+            onFuelChanged.Invoke(fuel, startFuel);
         }
 
         // Integrate velocity

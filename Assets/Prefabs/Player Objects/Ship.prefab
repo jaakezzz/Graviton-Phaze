@@ -106,13 +106,25 @@ MonoBehaviour:
   fields: {fileID: 0}
   cam: {fileID: 0}
   uiCanvas: {fileID: 0}
-  thrustAccel: 1.7
-  sustainBoost: 0.5
-  burstImpulse: 1
-  maxSpeed: 5
+  thrustAccel: 1
+  sustainBoost: 0.25
+  burstImpulse: 2.25
+  maxSpeed: 2.25
   linearDrag: 0.02
   invertSteer: 1
   deadzoneDeg: 2
   turnRatePerDeg: 6
   maxTurnRate: 720
   tiltSmooth: 12
+  startFuel: 5
+  fuel: 5
+  burnRate: 1.5
+  sustainedMult: 1.5
+  burstCost: 4.5
+  minFuelToThrust: 0.05
+  onFuelChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onOutOfFuel:
+    m_PersistentCalls:
+      m_Calls: []
