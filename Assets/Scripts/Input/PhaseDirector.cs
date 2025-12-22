@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class PhaseDirector : MonoBehaviour
 {
@@ -17,6 +18,7 @@ public class PhaseDirector : MonoBehaviour
     [Header("HUD Roots (optional)")]
     [SerializeField] GameObject planHUD;
     [SerializeField] GameObject flyHUD;
+    [SerializeField] GameObject winHUD;
 
     [Header("Startup")]
     [SerializeField] Phase startPhase = Phase.Plan;
@@ -61,9 +63,24 @@ public class PhaseDirector : MonoBehaviour
     {
         if (flyGO == null)
         {
-            flyGO = Instantiate(flyPrefab, flySpawn ? flySpawn.position : Vector3.zero,
-                                            flySpawn ? flySpawn.rotation : Quaternion.identity);
+            flyGO = Instantiate(flyPrefab,
+                                flySpawn ? flySpawn.position : Vector3.zero,
+                                flySpawn ? flySpawn.rotation : Quaternion.identity);
+
             shipHandler = flyGO.GetComponentInChildren<ShipController>(true);
+
+            // Add listener for onLose events
+            if (shipHandler != null)
+            {
+                shipHandler.onLose.RemoveListener(UI_RestartFly); // guard against dupes
+                shipHandler.onLose.AddListener(UI_RestartFly);
+            }
+        }
+        else if (shipHandler != null)
+        {
+            // Safety: ensure the listener exists even if EnsureFly() is called again later
+            shipHandler.onLose.RemoveListener(UI_RestartFly);
+            shipHandler.onLose.AddListener(UI_RestartFly);
         }
     }
 
@@ -93,6 +110,12 @@ public class PhaseDirector : MonoBehaviour
         current = Phase.Fly;
         EnsureFly();
 
+        if (shipHandler != null)    // ensure onLose event is being listened to
+        {
+            shipHandler.onLose.RemoveListener(UI_RestartFly);
+            shipHandler.onLose.AddListener(UI_RestartFly);
+        }
+
         // visuals / instances
         if (planGO) planGO.SetActive(false);
         flyGO.SetActive(true);
@@ -106,12 +129,33 @@ public class PhaseDirector : MonoBehaviour
         // sensors
         if (AttitudeSensor.current != null && !AttitudeSensor.current.enabled)
             InputSystem.EnableDevice(AttitudeSensor.current);
-
-        // optional: zero the ship’s twist baseline on entry
-        shipHandler?.Calibrate();
     }
 
-    public void EnterWin() { /* later */ }
+    public void EnterWin()
+    {
+        current = Phase.Win;
+
+        // Keep ship visible but frozen in place (no physics drift).
+        EnsureFly();
+        if (shipHandler)
+        {
+            // Freeze at current position, keep fuel & heading; lock until next thrust.
+            var here = (Vector2)shipHandler.transform.position;
+            shipHandler.RestartAt(here, resetFuel: false, relockUntilThrust: true);
+        }
+
+        // Hide gameplay HUDs, show Win HUD
+        if (planHUD) planHUD.SetActive(false);
+        if (flyHUD) flyHUD.SetActive(false);
+        if (winHUD) winHUD.SetActive(true);
+
+        // Disable gameplay action maps (UI still works through EventSystem UI module)
+        foreach (var m in playerInput.actions.actionMaps) m.Disable();
+
+        // Optional: turn off attitude sensor while in Win
+        if (AttitudeSensor.current != null && AttitudeSensor.current.enabled)
+            InputSystem.DisableDevice(AttitudeSensor.current);
+    }
     public void EnterLose() { /* later */ }
 
     void EnableOnlyMap(string mapName)
@@ -142,4 +186,52 @@ public class PhaseDirector : MonoBehaviour
         if (current != Phase.Fly) return;
         shipHandler?.Calibrate();
     }
+
+    public void UI_RestartFly()
+    {
+        // Make sure we have the ship
+        EnsureFly();
+
+        // Reset ship at the fly spawn point (keeps placed anchors intact)
+        var pos = flySpawn ? (Vector2)flySpawn.position : Vector2.zero;
+        shipHandler?.RestartAt(pos, resetFuel: true, relockUntilThrust: true);
+
+        // Keep the current action map/hud as Fly
+        EnableOnlyMap("Fly");
+    }
+
+    // ---- UI Button hook (Plan HUD) ----
+    public void Plan_ClearAllDocks()
+    {
+        // Only allow clearing while in Plan (optional guard)
+        if (/* current phase tracking */ true) // or: if (current == Phase.Plan)
+        {
+            AutoDockNode.ClearAll();
+            // Optional: also clear any prediction line currently visible
+            // FindObjectOfType<TrajectoryPredictor>()?.Clear();
+        }
+    }
+
+    // ---- UI Button hook (Win HUD) ----
+    // Called by the "Retry" button on the Win HUD.
+    public void UI_RestartLevel()
+    {
+        // Clear placed anchors/docks so the player gets a clean retry
+        AutoDockNode.ClearAll();
+
+        // disable win HUD
+        if (winHUD) winHUD.SetActive(false);
+
+        UI_RestartFly();
+
+        // Go back to planning with normal controls/HUD
+        EnterPlan();
+    }
+
+    // Called by the "Menu" button on the Win HUD.
+    public void UI_ReturnToMenu()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+    }
+
 }

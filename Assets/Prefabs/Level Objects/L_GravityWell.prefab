@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7479610720173351595}
   - component: {fileID: 6921076167042719698}
   - component: {fileID: 4620169824737994472}
+  - component: {fileID: -7459912923852291940}
   m_Layer: 0
   m_Name: L_GravityWell
   m_TagString: Untagged
@@ -45,9 +46,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 542922890bf61e341a0177ba0fb40bcc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GravityWell2D
-  S: 12
+  S: 15
   eps: 0.3
-  aMax: 9
+  aMax: 15
 --- !u!212 &4620169824737994472
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -106,3 +107,39 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!58 &-7459912923852291940
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7181047371214980396}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_Radius: 0.75
