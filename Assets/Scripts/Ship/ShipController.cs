@@ -70,6 +70,9 @@ public class ShipController : MonoBehaviour
     // -----------------------------
     public UnityEvent onLose = new UnityEvent();    // wire this to PhaseDirector.UI_RestartFly in Inspector
 
+    public UnityEngine.Events.UnityEvent onFirstLaunch = new UnityEngine.Events.UnityEvent();
+
+
 
     // Convenience accessors (read-only)
     public float Fuel => fuel;
@@ -94,6 +97,27 @@ public class ShipController : MonoBehaviour
     // UI raycast helpers to avoid thrust when touching buttons
     GraphicRaycaster raycaster;
     EventSystem evt;
+
+    // -----------------------------
+    // AUDIO (Hybrid: local loop + central one-shots)
+    // -----------------------------
+    [Header("Audio")]
+    [SerializeField] AudioSource engineLoop;        // Local looping source for engine thrust (attach on prefab)
+    [SerializeField] float engineVolOn = 0.85f;     // Target volume while thrusting
+    [SerializeField] float engineVolOff = 0f;       // Target volume when idle
+    [SerializeField] float engineFadeIn = 8f;       // Fade-in rate (units per second)
+    [SerializeField] float engineFadeOut = 6f;      // Fade-out rate (units per second)
+
+    [SerializeField] AudioClip sfxThrustStart;      // Optional: one-shot at thrust start
+    [SerializeField] AudioClip sfxThrustEnd;        // Optional: one-shot at thrust end
+    [SerializeField] AudioClip sfxSustainOn;        // Optional: sustained mode engaged
+    [SerializeField] AudioClip sfxSustainOff;       // Optional: sustained mode released
+    [SerializeField] AudioClip sfxBurst;            // Burst impulse
+    [SerializeField] AudioClip sfxOutOfFuel;        // Fuel just hit zero
+    [SerializeField] AudioClip sfxLose;             // Lose (death / out of bounds)
+    [SerializeField] AudioClip sfxFirstLaunch;      // First time the ship actually launches this flight
+
+    bool engineShouldPlay = false;                  // Desired state from physics (updated in FixedUpdate)
 
     // ----------------------------------------
     // ResolveRefs: finds missing references at runtime (nice for spawned prefabs)
@@ -138,6 +162,14 @@ public class ShipController : MonoBehaviour
         ResolveRefs();                               // Fill any missing refs
         if (uiCanvas) raycaster = uiCanvas.GetComponent<GraphicRaycaster>();
         evt = EventSystem.current;                   // Cache EventSystem (may be null in some test scenes)
+
+        // Audio: ensure sane defaults for the local engine loop source
+        if (engineLoop)
+        {
+            engineLoop.loop = true;
+            engineLoop.playOnAwake = false;
+            engineLoop.volume = 0f;
+        }
     }
 
     // ----------------------------------------
@@ -176,6 +208,14 @@ public class ShipController : MonoBehaviour
         // Launch lock setup: record spawn position and set launched flag based on setting
         spawnPos = transform.position;
         launched = !lockUntilThrust ? true : false;  // If lockUntilThrust is false, start launched immediately
+
+        // Reset engine audio state
+        engineShouldPlay = false;
+        if (engineLoop)
+        {
+            engineLoop.volume = 0f;
+            engineLoop.Pause();
+        }
     }
 
     // -----------------------------
@@ -202,6 +242,14 @@ public class ShipController : MonoBehaviour
             fuel = startFuel;
             onFuelChanged.Invoke(fuel, startFuel);
         }
+
+        // audio reset
+        engineShouldPlay = false;
+        if (engineLoop)
+        {
+            engineLoop.volume = 0f;
+            engineLoop.Pause();
+        }
     }
 
     // =========================
@@ -223,15 +271,30 @@ public class ShipController : MonoBehaviour
             if (IsPointerOverUIAnywhere(screenPos)) { thrusting = false; return; }
             thrusting = true;                                       // Begin thrusting on press
 
+            // AUDIO: thrust start blip
+            if (sfxThrustStart) AudioManager.I?.PlaySFX(sfxThrustStart);
         }
-        else if (ctx.canceled) thrusting = false;                   // Stop thrusting on release
+        else if (ctx.canceled)
+        {
+            thrusting = false;                   // Stop thrusting on release
+            // AUDIO: thrust end blip
+            if (sfxThrustEnd) AudioManager.I?.PlaySFX(sfxThrustEnd);
+        }
     }
 
     // Long-press promotion (~0.35s via Hold interaction) toggles the sustained mode
     public void OnSustained(InputAction.CallbackContext ctx)
     {
-        if (ctx.performed) sustained = true;                        // Enter sustained after hold threshold
-        if (ctx.canceled) sustained = false;                       // Exit sustained when finger lifts
+        if (ctx.performed)
+        {
+            sustained = true;                        // Enter sustained after hold threshold
+            if (sfxSustainOn) AudioManager.I?.PlaySFX(sfxSustainOn);
+        }
+        if (ctx.canceled)
+        {
+            sustained = false;                       // Exit sustained when finger lifts
+            if (sfxSustainOff) AudioManager.I?.PlaySFX(sfxSustainOff);
+        }
     }
 
     // Double-tap burst: instant impulse + fuel cost; also unlocks launch gate
@@ -246,9 +309,12 @@ public class ShipController : MonoBehaviour
         if (fuel < burstCost) return;                               // Not enough fuel ? no burst
 
         fuel -= burstCost;                                          // Pay fuel cost
-        launched = true;                                            // Unlock from pad immediately
+        if (!launched) { launched = true; onFirstLaunch.Invoke(); if (sfxFirstLaunch) AudioManager.I?.PlaySFX(sfxFirstLaunch); } // count launch (+ SFX)
         vel += HeadingDir() * burstImpulse;                         // Add forward impulse
         onFuelChanged.Invoke(fuel, startFuel);                      // Notify UI
+
+        // AUDIO: burst
+        if (sfxBurst) AudioManager.I?.PlaySFX(sfxBurst);
     }
 
     // Gyro tilt ? computes a signed "roll" angle in the screen plane (XY) relative to baseline
@@ -322,6 +388,23 @@ public class ShipController : MonoBehaviour
             tiltDegCurrent,
             1f - Mathf.Exp(-tiltSmooth * Time.deltaTime)
         );
+
+        // AUDIO: fade engine loop towards target each frame
+        if (engineLoop)
+        {
+            float target = engineShouldPlay ? engineVolOn : engineVolOff;
+            float rate = (engineShouldPlay ? engineFadeIn : engineFadeOut) * Time.deltaTime;
+            engineLoop.volume = Mathf.MoveTowards(engineLoop.volume, target, rate);
+
+            if (engineLoop.volume > 0.001f)
+            {
+                if (!engineLoop.isPlaying) engineLoop.Play();
+            }
+            else
+            {
+                if (engineLoop.isPlaying) engineLoop.Pause();
+            }
+        }
     }
 
     // -----------------------------
@@ -349,7 +432,7 @@ public class ShipController : MonoBehaviour
         // Apply thrust along the ship’s current heading; burn fuel accordingly
         if (canThrust)
         {
-            launched = true;                        // First real thrust unlocks from the pad
+            if (!launched) { launched = true; onFirstLaunch.Invoke(); if (sfxFirstLaunch) AudioManager.I?.PlaySFX(sfxFirstLaunch); }  // First real thrust unlocks from the pad & counts
             float acc = sustained
                 ? thrustAccel * (1f + sustainBoost) // Extra acceleration during Sustained
                 : thrustAccel;
@@ -360,8 +443,12 @@ public class ShipController : MonoBehaviour
             float burn = burnRate * (sustained ? sustainedMult : 1f) * dt;
             float before = fuel;
             fuel = Mathf.Max(0f, fuel - burn);
-            if (fuel <= 0f && before > 0f) onOutOfFuel.Invoke(); // One-time event when fuel hits zero
-            onFuelChanged.Invoke(fuel, startFuel);               // Notify UI of new fuel level
+            if (fuel <= 0f && before > 0f)
+            {
+                onOutOfFuel.Invoke();               // One-time event when fuel hits zero
+                if (sfxOutOfFuel) AudioManager.I?.PlaySFX(sfxOutOfFuel);
+            }
+            onFuelChanged.Invoke(fuel, startFuel);  // Notify UI of new fuel level
         }
 
         // --- Integrate velocity (semi-implicit Euler): v(t+dt) = v(t) + a*dt
@@ -392,6 +479,9 @@ public class ShipController : MonoBehaviour
         // Visually face "forward" (+Y) rotated by yawDeg; transform.up is the ship’s forward axis in 2D
         var dir = HeadingDir();
         if (dir.sqrMagnitude > 1e-6f) transform.up = dir;
+
+        // AUDIO: engine desire follows actual thrust engagement
+        engineShouldPlay = canThrust;
     }
 
     // -----------------------------
@@ -443,6 +533,10 @@ public class ShipController : MonoBehaviour
         Debug.Log($"[Ship] Lose: {reason}");
         // zero motion immediately
         vel = Vector2.zero;
+
+        // AUDIO: lose cue
+        if (sfxLose) AudioManager.I?.PlaySFX(sfxLose);
+
         onLose.Invoke();  // PhaseDirector.UI_RestartFly()
     }
 

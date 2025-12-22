@@ -1405,6 +1405,59 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 400058297}
   m_CullTransparentMesh: 1
+--- !u!1 &409604714
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 409604716}
+  - component: {fileID: 409604715}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &409604715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 409604714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44eabfb694cc13e4ca0f7e1a8a1518dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
+  mixer: {fileID: 24100000, guid: 3aeb443306872a0468a04f9bfe830023, type: 2}
+  masterParam: MasterVol
+  musicParam: MusicVol
+  sfxParam: SFXVol
+  musicGroup: {fileID: -1279399464286097763, guid: 3aeb443306872a0468a04f9bfe830023, type: 2}
+  sfxGroup: {fileID: 5311325470503102294, guid: 3aeb443306872a0468a04f9bfe830023, type: 2}
+  musicSource: {fileID: 0}
+  sfxOneShot: {fileID: 0}
+  sfxVoices: 8
+--- !u!4 &409604716
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 409604714}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 739.6178, y: 439.0632, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &447073876
 GameObject:
   m_ObjectHideFlags: 0
@@ -3114,6 +3167,11 @@ MonoBehaviour:
   settingsScene: 
   settingsPanel: {fileID: 1487969947}
   quitConfirmPanel: {fileID: 649128328}
+  musicMainMenu: {fileID: 8300000, guid: 8ebb8e28bc434de46a92e8bc9d75090a, type: 3}
+  playMusicOnAwake: 1
+  sfxClick: {fileID: 8300000, guid: d62f75a146023d94cbdabf9dc97bd113, type: 3}
+  sfxBack: {fileID: 8300000, guid: 71c5974827887194b9b597e11197c3c4, type: 3}
+  sfxConfirm: {fileID: 8300000, guid: 8b23b3c64f578e047b3b42122cde567b, type: 3}
 --- !u!4 &984270576
 Transform:
   m_ObjectHideFlags: 0
@@ -3634,6 +3692,7 @@ GameObject:
   - component: {fileID: 1487969948}
   - component: {fileID: 1487969950}
   - component: {fileID: 1487969949}
+  - component: {fileID: 1487969951}
   m_Layer: 5
   m_Name: Panel_Settings
   m_TagString: Untagged
@@ -3705,6 +3764,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1487969947}
   m_CullTransparentMesh: 1
+--- !u!114 &1487969951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1487969947}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb95db161564aac4ab6fbe6e5a23d36c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SettingsAudioUI
+  master: {fileID: 2101697611}
+  music: {fileID: 603672146}
+  sfx: {fileID: 10212548}
 --- !u!1 &1599641491
 GameObject:
   m_ObjectHideFlags: 0
@@ -5059,3 +5133,4 @@ SceneRoots:
   - {fileID: 454233282}
   - {fileID: 984270576}
   - {fileID: 104700168}
+  - {fileID: 409604716}

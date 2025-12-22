@@ -19,21 +19,53 @@ public class MenuManager : MonoBehaviour
     [Tooltip("Assign if you want a Quit confirm popup.")]
     [SerializeField] GameObject quitConfirmPanel;
 
+    // ======================
+    // Audio hooks
+    // ======================
+    [Header("Audio")]
+    [Tooltip("Main menu music. Played on Awake if enabled.")]
+    [SerializeField] AudioClip musicMainMenu;
+
+    [Tooltip("Play menu music automatically on Awake.")]
+    [SerializeField] bool playMusicOnAwake = true;
+
+    [Space(6)]
+    [Tooltip("Generic UI click.")]
+    [SerializeField] AudioClip sfxClick;
+
+    [Tooltip("Back/cancel action.")]
+    [SerializeField] AudioClip sfxBack;
+
+    [Tooltip("Confirm/primary action.")]
+    [SerializeField] AudioClip sfxConfirm;
+
+    void Awake()
+    {
+        if (playMusicOnAwake && musicMainMenu != null)
+        {
+            // Uses AudioManager from earlier; harmless if missing.
+            AudioManager.I?.PlayMusic(musicMainMenu);
+        }
+    }
+
     // ----- Buttons -----
     public void OnPlay()
     {
+        PlayConfirm();
         if (!string.IsNullOrEmpty(gameScene))
             SceneManager.LoadScene(gameScene);
     }
 
     public void OnSettings()
     {
+        PlayClick();
         if (settingsPanel) settingsPanel.SetActive(true);
         else if (!string.IsNullOrEmpty(settingsScene)) SceneManager.LoadScene(settingsScene);
     }
 
     public void OnCalibrateGyroButton()
     {
+        PlayConfirm();
         StartCoroutine(CalibrateNowInMenu());
     }
 
@@ -48,9 +80,9 @@ public class MenuManager : MonoBehaviour
 
         if (!sensor.enabled) InputSystem.EnableDevice(sensor);
 
-        // Let the sensor warm up a touch (especially on device)
-        yield return null; // 1 frame
-        yield return null; // 2 frames
+        // Let the sensor warm for a couple frames (esp. on device)
+        yield return null;
+        yield return null;
 
         var q = sensor.attitude.ReadValue();
         GyroCalibrationService.SetBaseline(q);
@@ -59,12 +91,14 @@ public class MenuManager : MonoBehaviour
 
     public void OnClearGyroCalibration()
     {
+        PlayBack();
         GyroCalibrationService.ClearBaseline();
         Debug.Log("[Settings] Cleared stored baseline.");
     }
 
     public void OnCloseSettings()
     {
+        PlayBack();
         if (settingsPanel) settingsPanel.SetActive(false);
         else
             // If Settings is a separate scene, go back to main menu (adjust as needed)
@@ -73,7 +107,7 @@ public class MenuManager : MonoBehaviour
 
     public void OnQuit()
     {
-        // Works in builds; exits Play Mode in the Editor
+        PlayConfirm();
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -82,6 +116,13 @@ public class MenuManager : MonoBehaviour
     }
 
     // Optional confirm flow
-    public void OnQuitAsk() { if (quitConfirmPanel) quitConfirmPanel.SetActive(true); }
-    public void OnQuitCancel() { if (quitConfirmPanel) quitConfirmPanel.SetActive(false); }
+    public void OnQuitAsk() { PlayClick(); if (quitConfirmPanel) quitConfirmPanel.SetActive(true); }
+    public void OnQuitCancel() { PlayBack(); if (quitConfirmPanel) quitConfirmPanel.SetActive(false); }
+
+    // ======================
+    // Audio helpers
+    // ======================
+    void PlayClick() { if (sfxClick) AudioManager.I?.PlayUISnap(sfxClick); }
+    void PlayBack() { if (sfxBack) AudioManager.I?.PlayUISnap(sfxBack); }
+    void PlayConfirm() { if (sfxConfirm) AudioManager.I?.PlayUISnap(sfxConfirm); }
 }

@@ -42,6 +42,16 @@ public class PlanInputHandler : MonoBehaviour
     [SerializeField] ProbeController probePrefab;     // Prefab for the projectile
     [SerializeField] FieldManager fieldManager;       // Passed to the probe so it can query field acceleration
 
+    // ---------- Audio (optional) ----------
+    [Header("Audio (optional)")]
+    [SerializeField] AudioClip sfxAimStart;           // when drag begins (valid, not on UI)
+    [SerializeField] AudioClip sfxAimMove;            // quiet tick/whirr while dragging (throttled)
+    [SerializeField] AudioClip sfxAimBlocked;         // tap started over UI
+    [SerializeField] AudioClip sfxAimCancel;          // drag canceled without firing (optional)
+    [SerializeField] AudioClip sfxFire;               // on release when we spawn the probe
+    [SerializeField] AudioClip sfxSwapProbe;          // when cycling probe type
+    [SerializeField] float aimMoveSfxInterval = 0.08f; // throttle for sfxAimMove (seconds)
+
     // Cached helpers for UI hit-testing
     GraphicRaycaster _raycaster;
     EventSystem _eventSystem;
@@ -53,6 +63,9 @@ public class PlanInputHandler : MonoBehaviour
     // Positions tracked in SCREEN space during drag
     Vector2 aimOriginScreen;                          // Where the aim starts (cannon projected to screen)
     Vector2 currentPosScreen;                         // Current pointer/touch position on screen
+
+    // Audio throttle
+    float _nextAimMoveSfxAt = 0f;
 
     // ----------------------------------------
     // Unity lifecycle: cache references
@@ -151,7 +164,7 @@ public class PlanInputHandler : MonoBehaviour
         if (ctx.started)
         {
             // If the press began over UI, block this entire drag/aim session
-            if (IsOverUI(screenPos)) { aimBlockedByUI = true; aiming = false; predictor?.Clear(); return; }
+            if (IsOverUI(screenPos)) { aimBlockedByUI = true; aiming = false; predictor?.Clear(); SFX(sfxAimBlocked); return; }
 
             // Begin aiming
             aimBlockedByUI = false;
@@ -164,6 +177,7 @@ public class PlanInputHandler : MonoBehaviour
                 : (Vector2)(cannon ? cannon.position : Vector2.zero);
 
             predictor?.Show();  // Start showing the preview
+            SFX(sfxAimStart);   // --- Audio hook ---
             return;
         }
 
@@ -172,7 +186,7 @@ public class PlanInputHandler : MonoBehaviour
         if (ctx.canceled)
         {
             // If the drag started on UI, ignore the release and clear preview
-            if (aimBlockedByUI) { aimBlockedByUI = false; predictor?.Clear(); return; }
+            if (aimBlockedByUI) { aimBlockedByUI = false; predictor?.Clear(); SFX(sfxAimCancel); return; }
             if (!aiming) return; // Defensive: ignore if we weren’t actually aiming
 
             // End of drag ? compute final v0 and fire
@@ -183,6 +197,7 @@ public class PlanInputHandler : MonoBehaviour
             predictor?.Clear();                                  // Hide preview
             Debug.Log($"[Plan] Fire v0={v0}");
             SpawnProbe(originWorld, v0, probeType);              // Instantiate probe and initialize it
+            SFX(sfxFire);                                        // --- Audio hook ---
         }
     }
 
@@ -201,6 +216,9 @@ public class PlanInputHandler : MonoBehaviour
 
         // Draw/update the trajectory preview (predictor may simulate or just draw a parametric arc)
         predictor?.Draw(originWorld, v0);
+
+        // --- Audio hook (throttled move feedback) ---
+        if (Time.time >= _nextAimMoveSfxAt) { SFX(sfxAimMove); _nextAimMoveSfxAt = Time.time + aimMoveSfxInterval; }
     }
 
     // -----------------------------
@@ -227,6 +245,7 @@ public class PlanInputHandler : MonoBehaviour
         if (probeIcon && probeSprites != null && probeSprites.Length > (int)probeType)
             probeIcon.sprite = probeSprites[(int)probeType];
         Debug.Log($"[Plan] Probe = {probeType}");
+        SFX(sfxSwapProbe);                         // --- Audio hook ---
     }
 
     // -----------------------------
@@ -236,9 +255,18 @@ public class PlanInputHandler : MonoBehaviour
     {
         var p = Instantiate(probePrefab, originWorld, Quaternion.identity); // Create the projectile
         p.Init(originWorld, v0, type, fieldManager);                        // Hand it its initial state & Fields ref
+
+        LevelActions.Instance?.CountProbeFire();     // ? count action
     }
 
     // Cycles enum in a wrap-around fashion (0?1?2?3?0…)
     static ProbeType Next(ProbeType p)
         => (ProbeType)(((int)p + 1) % System.Enum.GetValues(typeof(ProbeType)).Length);
+
+    // ---------- Audio helper (safe no-op if AudioManager isn’t present or clip unassigned) ----------
+    void SFX(AudioClip clip)
+    {
+        if (clip == null) return;
+        AudioManager.I?.PlaySFX(clip);
+    }
 }
