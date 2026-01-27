@@ -80,7 +80,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 2171121151272029278, guid: 630187ea87cdaa44786fe193530b4e8d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -104,7 +104,32 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AutoDockNode
   snapRadius: 0.5
+  anchorParent: {fileID: 0}
   stabilizerPrefab: {fileID: -1865237086688501246, guid: 65af810534fc2f448a5cb10bbd73da25, type: 3}
   repulsorPrefab: {fileID: -1953464349137744955, guid: a39de47803b565d49823108b50272e3d, type: 3}
   jetstreamPrefab: {fileID: 3674275697175982553, guid: 45d55c41378e2144dad59e27a495c3c4, type: 3}
   vortexPrefab: {fileID: 4342159539407153133, guid: e95da40b6df5c2042b35afdc8097718a, type: 3}
+  acceptStabilizer: 1
+  acceptRepulsor: 1
+  acceptJetstream: 1
+  acceptVortex: 1
+  stabilizer:
+    apply: 0
+    U0: 5
+    R: 1.5
+    accelClamp: 0
+  repulsor:
+    apply: 0
+    S: -6
+    epsilon: 0.1
+  jetstream:
+    apply: 0
+    E: {x: 0, y: 3}
+    radius: 2
+  vortex:
+    apply: 0
+    Omega: 2
+    radius: 1
+    aMax: 3
+    clockwise: 1
+  activeAnchorGO: {fileID: 0}
