@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;   // New Input System
 
 // Types of probes the player can launch; drives which anchor/field gets spawned on dock.
-public enum ProbeType { Stabilizer, Repulsor, Jetstream, Vortex }
+public enum ProbeType { Stabilizer, Repulsor, Jetstream, Vortex } // Nebula...
 
 public class PlanInputHandler : MonoBehaviour
 {

@@ -22,6 +22,17 @@ public class ProbeController : MonoBehaviour
     float stationaryTimer, age;  // stationaryTimer counts low-speed time; age counts total lifetime
     Camera cam;                  // Cached main camera for simple out-of-bounds culling
 
+    // -----------------------------
+    // Visuals: choose sprite by ProbeType
+    // Order must match the enum: 0=Stabilizer, 1=Repulsor, 2=Jetstream, 3=Vortex
+    // -----------------------------
+    [Header("Visuals")]
+    [Tooltip("SpriteRenderer on this probe (root or child).")]
+    [SerializeField] SpriteRenderer spriteRenderer;
+
+    [Tooltip("One sprite per ProbeType in enum order: Stabilizer, Repulsor, Jetstream, Vortex.")]
+    [SerializeField] Sprite[] typeSprites;
+
     // -------------------------------------------------
     // Called by the spawner (PlanInputHandler.SpawnProbe)
     // Initializes position, initial velocity, type, and field ref
@@ -33,6 +44,19 @@ public class ProbeController : MonoBehaviour
         Type = type;              // What we will deploy when docking
         Fields = fields;          // Where we query accelerations from
         // NOTE: We assume a fresh instance; if you pool, consider resetting age/stationaryTimer here.
+
+        ApplyTypeVisuals();
+    }
+
+    void ApplyTypeVisuals()
+    {
+        if (!spriteRenderer) return;
+        int i = (int)Type;
+        if (typeSprites != null && i >= 0 && i < typeSprites.Length && typeSprites[i] != null)
+        {
+            spriteRenderer.sprite = typeSprites[i];
+        }
+        // else: no sprite assigned for this type so keep whatever the prefab already has
     }
 
     // -------------------------------------------------

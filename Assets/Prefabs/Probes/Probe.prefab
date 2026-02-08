@@ -109,3 +109,9 @@ MonoBehaviour:
   vEps: 0.05
   stationaryTimeout: 0.6
   spawnGrace: 0.15
+  spriteRenderer: {fileID: 635456470710703785}
+  typeSprites:
+  - {fileID: 5696287119218570021, guid: e09479682d67de84b8e24ec219e7f264, type: 3}
+  - {fileID: -8844172632690085760, guid: 7023cf46350b7ed40be6ef68cc6cdc87, type: 3}
+  - {fileID: 5373325794096125510, guid: 16c996eb10f9d744a9b8ad1be513e534, type: 3}
+  - {fileID: 3684967314995345555, guid: 300e9e46112691c43835084a00c04c46, type: 3}

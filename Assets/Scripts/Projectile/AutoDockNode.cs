@@ -1,6 +1,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Flags]
+public enum ProbeTypeMask
+{
+    None = 0,
+    Stabilizer = 1 << 0, // S
+    Repulsor = 1 << 1, // R
+    Jetstream = 1 << 2, // J
+    Vortex = 1 << 3, // V
+}
+
+[System.Serializable]
+public struct ComboSprite
+{
+    [Tooltip("Choose the exact combination this sprite represents (e.g., S|R|J).")]
+    public ProbeTypeMask mask;
+    [Tooltip("Sprite to use for this combination.")]
+    public Sprite sprite;
+}
+
 public class AutoDockNode : MonoBehaviour
 {
     // Global registry so PhaseDirector/UI can clear all docks quickly.
@@ -23,6 +42,17 @@ public class AutoDockNode : MonoBehaviour
     public UniformPatch2D jetstreamPrefab;
     [Tooltip("Prefab to spawn when a Vortex probe docks.")]
     public VortexField2D vortexPrefab;
+
+    // --- Jetstream arrow overlay ---
+    [Header("Jetstream Arrow (optional)")]
+    [Tooltip("SpriteRenderer for the arrow overlay that shows jetstream direction (child object).")]
+    [SerializeField] SpriteRenderer jetArrow;
+
+    [Tooltip("Hide the arrow if the direction magnitude is below this.")]
+    [SerializeField] float arrowHideThreshold = 0.001f;
+
+    [Tooltip("Fallback direction if no override/prefab info is available (up = 0°).")]
+    [SerializeField] Vector2 fallbackArrowDir = Vector2.up;
 
     // -----------------------------
     // Acceptance toggles per type
@@ -95,7 +125,50 @@ public class AutoDockNode : MonoBehaviour
     // Convenience: true if a probe has already occupied this dock.
     public bool IsOccupied => activeAnchorGO != null;
 
-    void OnEnable() => All.Add(this);
+    // =============================
+    // VISUALS: single combo sprite
+    // =============================
+    [Header("Visuals (combo sprite)")]
+    [Tooltip("Renderer whose sprite will be replaced based on the accepted probe combination.")]
+    [SerializeField] SpriteRenderer targetRenderer;
+
+    [Tooltip("Provide one entry for each combination you have a sprite for (S,R,J,V, SR, SJ, ..., SRJV).")]
+    [SerializeField] ComboSprite[] comboTable;
+
+    [Tooltip("Warn in console if a matching combination sprite is not found.")]
+    [SerializeField] bool warnIfMissing = true;
+
+    // Fast lookup at runtime
+    Dictionary<ProbeTypeMask, Sprite> _comboLookup;
+
+    void Awake()
+    {
+        if (!targetRenderer) targetRenderer = GetComponent<SpriteRenderer>();
+        if (!jetArrow) jetArrow = GetComponentInChildren<SpriteRenderer>(true); // tries to find arrow automatically
+        BuildComboLookup();
+        RefreshDockVisuals();
+    }
+
+#if UNITY_EDITOR
+    void OnValidate()
+    {
+        if (!targetRenderer) targetRenderer = GetComponent<SpriteRenderer>();
+        BuildComboLookup();
+        // Update immediately in editor when toggles change
+        if (!Application.isPlaying) RefreshDockVisuals();
+
+        // Update arrow immediately in editor when you tweak Acceptance or overrides.
+        if (isActiveAndEnabled)
+            UpdateJetstreamArrowVisual();
+    }
+#endif
+
+    void OnEnable()
+    {
+        All.Add(this);
+        RefreshDockVisuals();
+        UpdateJetstreamArrowVisual();
+    }
     void OnDisable() => All.Remove(this);
 
     // Returns true if this dock accepts a given probe type.
@@ -202,6 +275,7 @@ public class AutoDockNode : MonoBehaviour
                 }
                 break;
         }
+        UpdateJetstreamArrowVisual();
 
         // NOTE: field scripts should self-register with FieldManager in OnEnable.
         // If they don't, fetch FieldManager.Instance and register here.
@@ -219,6 +293,9 @@ public class AutoDockNode : MonoBehaviour
         // before destroying the object.
         Destroy(activeAnchorGO);
         activeAnchorGO = null;
+
+        // Anchor gone — fall back to override/prefab/fallback
+        UpdateJetstreamArrowVisual();
     }
 
     /// <summary>
@@ -243,4 +320,101 @@ public class AutoDockNode : MonoBehaviour
         var t = obj.GetType();
         return t.GetField(fieldName) != null || t.GetProperty(fieldName) != null;
     }
+
+    // ===== visuals helpers =====
+
+    void BuildComboLookup()
+    {
+        if (_comboLookup == null) _comboLookup = new Dictionary<ProbeTypeMask, Sprite>();
+        _comboLookup.Clear();
+        if (comboTable == null) return;
+        foreach (var e in comboTable)
+        {
+            _comboLookup[e.mask] = e.sprite; // later entries override earlier ones if duplicated
+        }
+    }
+
+    ProbeTypeMask CurrentMask()
+    {
+        ProbeTypeMask m = ProbeTypeMask.None;
+        if (acceptStabilizer) m |= ProbeTypeMask.Stabilizer;
+        if (acceptRepulsor) m |= ProbeTypeMask.Repulsor;
+        if (acceptJetstream) m |= ProbeTypeMask.Jetstream;
+        if (acceptVortex) m |= ProbeTypeMask.Vortex;
+        return m;
+    }
+
+    public void RefreshDockVisuals()
+    {
+        if (!targetRenderer) return;
+
+        var mask = CurrentMask();
+        if (mask == ProbeTypeMask.None)
+        {
+            targetRenderer.sprite = null; // or keep previous if you prefer
+            return;
+        }
+
+        if (_comboLookup != null && _comboLookup.TryGetValue(mask, out var sp) && sp != null)
+        {
+            targetRenderer.sprite = sp;
+        }
+        else
+        {
+            if (warnIfMissing)
+                Debug.LogWarning($"AutoDockNode '{name}': No combo sprite assigned for mask '{mask}'.");
+            // targetRenderer.sprite = null; // leave as-is if you prefer
+        }
+    }
+
+    // Computes the intended jetstream direction and rotates/shows the arrow.
+    // Assumes arrow sprite points up (+Y) at 0°; we rotate from Vector2.up to dir.
+    void UpdateJetstreamArrowVisual()
+    {
+        if (jetArrow == null)
+            return;
+
+        // If this dock doesn't accept Jetstream, hide arrow.
+        if (!acceptJetstream)
+        {
+            if (jetArrow.gameObject.activeSelf) jetArrow.gameObject.SetActive(false);
+            return;
+        }
+
+        // Decide which direction to show:
+        // Priority:
+        //  1) If a UniformPatch2D anchor is already spawned here, use its E.
+        //  2) Else if per-node overrides are enabled, use override E.
+        //  3) Else if the jetstream prefab exists, use its prefab E.
+        //  4) Else fallback.
+        Vector2 dir = fallbackArrowDir;
+
+        if (activeAnchorGO != null)
+        {
+            var up = activeAnchorGO.GetComponent<UniformPatch2D>();
+            if (up) dir = up.E;
+        }
+        else if (jetstream.apply)
+        {
+            dir = jetstream.E;
+        }
+        else if (jetstreamPrefab != null)
+        {
+            dir = jetstreamPrefab.E;
+        }
+
+        // Show/hide based on magnitude
+        if (dir.sqrMagnitude < arrowHideThreshold * arrowHideThreshold)
+        {
+            if (jetArrow.gameObject.activeSelf) jetArrow.gameObject.SetActive(false);
+            return;
+        }
+
+        if (!jetArrow.gameObject.activeSelf) jetArrow.gameObject.SetActive(true);
+
+        // Rotate arrow so that its "up" faces dir.
+        float ang = Vector2.SignedAngle(Vector2.up, dir.normalized);
+        jetArrow.transform.localRotation = Quaternion.Euler(0f, 0f, ang);
+    }
+
 }
