@@ -138,8 +138,22 @@ public class AutoDockNode : MonoBehaviour
     [Tooltip("Warn in console if a matching combination sprite is not found.")]
     [SerializeField] bool warnIfMissing = true;
 
+    // --------- Occupied-state sprites (one per probe type) ---------
+    [Header("Visuals (occupied sprites)")]
+    [Tooltip("Sprite to show when this dock is occupied by a Stabilizer probe.")]
+    [SerializeField] Sprite occupiedStabilizerSprite;
+    [Tooltip("Sprite to show when this dock is occupied by a Repulsor probe.")]
+    [SerializeField] Sprite occupiedRepulsorSprite;
+    [Tooltip("Sprite to show when this dock is occupied by a Jetstream probe.")]
+    [SerializeField] Sprite occupiedJetstreamSprite;
+    [Tooltip("Sprite to show when this dock is occupied by a Vortex probe.")]
+    [SerializeField] Sprite occupiedVortexSprite;
+
     // Fast lookup at runtime
     Dictionary<ProbeTypeMask, Sprite> _comboLookup;
+
+    // Track which probe type last docked (to decide arrow visibility & occupied sprite)
+    ProbeType? _lastDockedType = null;
 
     void Awake()
     {
@@ -275,6 +289,13 @@ public class AutoDockNode : MonoBehaviour
                 }
                 break;
         }
+
+        // If spawn succeeded, set occupied visuals and remember type
+        if (activeAnchorGO != null)
+        {
+            _lastDockedType = type;
+            SetOccupiedVisual(type);     // switch to the correct occupied sprite + manage arrow
+        }
         UpdateJetstreamArrowVisual();
 
         // NOTE: field scripts should self-register with FieldManager in OnEnable.
@@ -294,7 +315,11 @@ public class AutoDockNode : MonoBehaviour
         Destroy(activeAnchorGO);
         activeAnchorGO = null;
 
+        // Reset occupied state
+        _lastDockedType = null;
+
         // Anchor gone — fall back to override/prefab/fallback
+        RefreshDockVisuals();
         UpdateJetstreamArrowVisual();
     }
 
@@ -348,6 +373,28 @@ public class AutoDockNode : MonoBehaviour
     {
         if (!targetRenderer) return;
 
+        // If we’re occupied, show the occupied sprite for the docked type
+        if (IsOccupied && _lastDockedType.HasValue)
+        {
+            switch (_lastDockedType.Value)
+            {
+                case ProbeType.Stabilizer:
+                    if (occupiedStabilizerSprite) targetRenderer.sprite = occupiedStabilizerSprite;
+                    break;
+                case ProbeType.Repulsor:
+                    if (occupiedRepulsorSprite) targetRenderer.sprite = occupiedRepulsorSprite;
+                    break;
+                case ProbeType.Jetstream:
+                    if (occupiedJetstreamSprite) targetRenderer.sprite = occupiedJetstreamSprite;
+                    break;
+                case ProbeType.Vortex:
+                    if (occupiedVortexSprite) targetRenderer.sprite = occupiedVortexSprite;
+                    break;
+            }
+            return;
+        }
+
+        // Not occupied ? revert to base combo sprite
         var mask = CurrentMask();
         if (mask == ProbeTypeMask.None)
         {
@@ -363,7 +410,26 @@ public class AutoDockNode : MonoBehaviour
         {
             if (warnIfMissing)
                 Debug.LogWarning($"AutoDockNode '{name}': No combo sprite assigned for mask '{mask}'.");
-            // targetRenderer.sprite = null; // leave as-is if you prefer
+            targetRenderer.sprite = null; // ensure we don't leave a stale sprite
+        }
+    }
+
+    // switch to occupied sprite and manage arrow visibility according to the docked type.
+    void SetOccupiedVisual(ProbeType type)
+    {
+        // swap sprite
+        _lastDockedType = type;
+        RefreshDockVisuals();
+
+        // arrow behavior: hide for non-Jetstream; show+rotate for Jetstream
+        if (type != ProbeType.Jetstream)
+        {
+            if (jetArrow && jetArrow.gameObject.activeSelf)
+                jetArrow.gameObject.SetActive(false);
+        }
+        else
+        {
+            UpdateJetstreamArrowVisual();
         }
     }
 
@@ -373,6 +439,13 @@ public class AutoDockNode : MonoBehaviour
     {
         if (jetArrow == null)
             return;
+
+        // If occupied by a NON-Jetstream probe, always hide arrow.
+        if (IsOccupied && _lastDockedType.HasValue && _lastDockedType.Value != ProbeType.Jetstream)
+        {
+            if (jetArrow.gameObject.activeSelf) jetArrow.gameObject.SetActive(false);
+            return;
+        }
 
         // If this dock doesn't accept Jetstream, hide arrow.
         if (!acceptJetstream)

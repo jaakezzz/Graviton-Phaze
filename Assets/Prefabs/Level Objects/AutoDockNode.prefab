@@ -110,6 +110,9 @@ MonoBehaviour:
   repulsorPrefab: {fileID: -1953464349137744955, guid: a39de47803b565d49823108b50272e3d, type: 3}
   jetstreamPrefab: {fileID: 3674275697175982553, guid: 45d55c41378e2144dad59e27a495c3c4, type: 3}
   vortexPrefab: {fileID: 4342159539407153133, guid: e95da40b6df5c2042b35afdc8097718a, type: 3}
+  jetArrow: {fileID: 0}
+  arrowHideThreshold: 0.001
+  fallbackArrowDir: {x: 0, y: 1}
   acceptStabilizer: 1
   acceptRepulsor: 1
   acceptJetstream: 1
@@ -167,6 +170,10 @@ MonoBehaviour:
   - mask: -1
     sprite: {fileID: 4288121300795489759, guid: 7aca112dcabd8704288800ca91a89897, type: 3}
   warnIfMissing: 1
+  occupiedStabilizerSprite: {fileID: 406851016210279110, guid: e1cb9c71d7a9bc3489e7d64edf308f0a, type: 3}
+  occupiedRepulsorSprite: {fileID: 7669703668464303604, guid: 2b05f5eea36bf0f4b965b28de4cec8be, type: 3}
+  occupiedJetstreamSprite: {fileID: 5151580851005763639, guid: d0ca13a718aad6d4da0b91319dbdf20e, type: 3}
+  occupiedVortexSprite: {fileID: -4571170845703943731, guid: fe1b9954e65e3f340b1ea0bd5a02a865, type: 3}
 --- !u!1 &5566285852519352398
 GameObject:
   m_ObjectHideFlags: 0

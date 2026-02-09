@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: cb7bd697fc045314094077b8bc3351ba
+guid: fe1b9954e65e3f340b1ea0bd5a02a865
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2226517727002531806
-    second: GreenShip_0030_Package-----------------_0
+      213: -4571170845703943731
+    second: GreenShip_0029-V_Package-----------------_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,7 +126,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: GreenShip_0030_Package-----------------_0
+      name: GreenShip_0029-V_Package-----------------_0
       rect:
         serializedVersion: 2
         x: 0
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 22867e38ce1d911e0800000000000000
-      internalID: -2226517727002531806
+      spriteID: dc9c13eb550ff80c0800000000000000
+      internalID: -4571170845703943731
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      GreenShip_0030_Package-----------------_0: -2226517727002531806
+      GreenShip_0029-V_Package-----------------_0: -4571170845703943731
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

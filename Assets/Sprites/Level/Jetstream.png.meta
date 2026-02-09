@@ -1,16 +1,10 @@
 fileFormatVersion: 2
-guid: 48c1c8eb6559f824bbc69cdab2f76d57
+guid: d0ca13a718aad6d4da0b91319dbdf20e
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8786409395231055367
-    second: Exit_TXT 1_0
-  - first:
-      213: -5010864825671389050
-    second: Exit_TXT 1_1
-  - first:
-      213: 6177978778098825427
-    second: Exit_TXT 1_2
+      213: 5151580851005763639
+    second: GreenShip_0029-J_Package-----------------_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -52,12 +46,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 42
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -132,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Exit_TXT 1_0
+      name: GreenShip_0029-J_Package-----------------_0
       rect:
         serializedVersion: 2
-        x: 5
+        x: 0
         y: 0
-        width: 270
-        height: 135
+        width: 56
+        height: 42
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -147,52 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9f1291a1537601680800000000000000
-      internalID: -8786409395231055367
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Exit_TXT 1_1
-      rect:
-        serializedVersion: 2
-        x: 276
-        y: 0
-        width: 38
-        height: 134
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 6807b506df4d57ab0800000000000000
-      internalID: -5010864825671389050
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Exit_TXT 1_2
-      rect:
-        serializedVersion: 2
-        x: 316
-        y: 0
-        width: 137
-        height: 134
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 3d87b7267f69cb550800000000000000
-      internalID: 6177978778098825427
+      spriteID: 73037ef5d771e7740800000000000000
+      internalID: 5151580851005763639
       vertices: []
       indices: 
       edges: []
@@ -201,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -211,9 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Exit_TXT 1_0: -8786409395231055367
-      Exit_TXT 1_1: -5010864825671389050
-      Exit_TXT 1_2: 6177978778098825427
+      GreenShip_0029-J_Package-----------------_0: 5151580851005763639
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
