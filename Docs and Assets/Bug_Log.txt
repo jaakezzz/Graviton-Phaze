@@ -1,8 +1,4 @@
-v1.8.1
-
-- the Jetstream probe sprite is orange instead of yellow?
-
-- on Retry Level, if immediately entering Fly Phase without touching the screen in the play area, the ship thrusters are stuck as active.
+v1.8.4
 
 - during Fly Phase, using the calibration button while still docked in the launcher area slightly nudges the ship toward the acceleration of the level (towards the gravity well in the current sample level); the launch lock remains active.
 

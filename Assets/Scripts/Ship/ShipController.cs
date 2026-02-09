@@ -216,6 +216,8 @@ public class ShipController : MonoBehaviour
             engineLoop.volume = 0f;
             engineLoop.Pause();
         }
+
+        ClearInputState(alsoZeroTilt: true);
     }
 
     // -----------------------------
@@ -223,6 +225,8 @@ public class ShipController : MonoBehaviour
     // -----------------------------
     public void RestartAt(Vector2 pos, bool resetFuel = true, bool relockUntilThrust = true)
     {
+        ClearInputState(alsoZeroTilt: true);
+
         // position & kinematics
         vel = Vector2.zero;
         transform.position = pos;
@@ -496,6 +500,22 @@ public class ShipController : MonoBehaviour
         // x = sin(yaw), y = cos(yaw) ? up rotated by yaw
         return new Vector2(Mathf.Sin(rad), Mathf.Cos(rad));
     }
+
+    void ClearInputState(bool alsoZeroTilt = false)
+    {
+        thrusting = false;
+        sustained = false;
+        engineShouldPlay = false;
+
+        if (engineLoop) { engineLoop.volume = 0f; engineLoop.Pause(); }
+
+        if (alsoZeroTilt)
+        {
+            tiltDegCurrent = 0f;
+            tiltDegFiltered = 0f;
+        }
+    }
+
 
     // Get the actual screen position from the device that triggered the action.
     Vector2 GetScreenPos(InputAction.CallbackContext ctx)

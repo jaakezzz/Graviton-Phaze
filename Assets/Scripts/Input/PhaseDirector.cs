@@ -356,6 +356,7 @@ public class PhaseDirector : MonoBehaviour
         // Reset ship at the fly spawn point; keep anchors; reset fuel & relock
         var pos = flySpawn ? (Vector2)flySpawn.position : Vector2.zero;
         shipHandler?.RestartAt(pos, resetFuel: true, relockUntilThrust: true);
+        shipHandler?.SendMessage("ClearInputState", SendMessageOptions.DontRequireReceiver);
 
         // Allow counting the next "first launch" for the new attempt
         actions?.RestartFlightGate();
