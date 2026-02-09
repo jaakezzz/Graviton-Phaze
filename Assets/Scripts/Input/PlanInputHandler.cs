@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;   // New Input System
+using UnityEngine.Audio;
 
 // Types of probes the player can launch; drives which anchor/field gets spawned on dock.
 public enum ProbeType { Stabilizer, Repulsor, Jetstream, Vortex } // Nebula...
@@ -51,6 +52,14 @@ public class PlanInputHandler : MonoBehaviour
     [SerializeField] AudioClip sfxFire;               // on release when we spawn the probe
     [SerializeField] AudioClip sfxSwapProbe;          // when cycling probe type
     [SerializeField] float aimMoveSfxInterval = 0.08f; // throttle for sfxAimMove (seconds)
+    [SerializeField] bool aimMoveIsLoop = true;  // set true to use the loop behavior below
+    [SerializeField] float aimLoopFadeIn = 8f;   // units per second towards volume 1
+    [SerializeField] float aimLoopFadeOut = 8f;  // units per second towards volume 0
+
+    [SerializeField] AudioMixerGroup sfxBus;     // mixer routing target for sfx
+
+    AudioSource _aimLoopSrc;                     // dedicated loop source
+    bool _aimLoopShouldPlay = false;             // target state for the loop
 
     // Cached helpers for UI hit-testing
     GraphicRaycaster _raycaster;
@@ -75,6 +84,21 @@ public class PlanInputHandler : MonoBehaviour
         if (!cam) cam = Camera.main;                                      // Default to main camera
         if (uiCanvas) _raycaster = uiCanvas.GetComponent<GraphicRaycaster>(); // For IsOverUI checks
         _eventSystem = EventSystem.current;                                // Required for UI raycasts
+
+        // Prepare loop source if we're using a loop clip
+        if (aimMoveIsLoop && sfxAimMove)
+        {
+            _aimLoopSrc = gameObject.AddComponent<AudioSource>();
+            _aimLoopSrc.clip = sfxAimMove;
+            _aimLoopSrc.loop = true;
+            _aimLoopSrc.playOnAwake = false;
+            _aimLoopSrc.volume = 0f;            // start silent; we’ll fade in
+            _aimLoopSrc.spatialBlend = 0f;      // 2D UI-style sound
+
+            // route the loop to the SFX mixer bus
+            if (sfxBus) _aimLoopSrc.outputAudioMixerGroup = sfxBus;
+            else Debug.LogWarning("PlanInputHandler: sfxBus is not assigned; Aim Move loop will ignore SFX mixer volume.");
+        }
     }
 
     // ----------------------------------------
@@ -147,6 +171,36 @@ public class PlanInputHandler : MonoBehaviour
     // =========================
     // PLAN action map handlers
     // =========================
+    void Update()
+    {
+        if (_aimLoopSrc)
+        {
+            float target = _aimLoopShouldPlay ? 1f : 0f;
+            float rate = (_aimLoopShouldPlay ? aimLoopFadeIn : aimLoopFadeOut) * Time.deltaTime;
+            _aimLoopSrc.volume = Mathf.MoveTowards(_aimLoopSrc.volume, target, rate);
+
+            if (_aimLoopSrc.volume > 0.001f)
+            {
+                if (!_aimLoopSrc.isPlaying) _aimLoopSrc.Play();
+            }
+            else
+            {
+                if (_aimLoopSrc.isPlaying) _aimLoopSrc.Stop();
+            }
+        }
+    }
+
+    //Safety Reset for loop state when disabled/destroyed
+    void OnDisable()
+    {
+        if (_aimLoopSrc)
+        {
+            _aimLoopShouldPlay = false;
+            _aimLoopSrc.Stop();
+            _aimLoopSrc.volume = 0f;
+        }
+    }
+
 
     // Button: <Touchscreen>/primaryTouch/press
     // Handles drag lifecycle: started ? begin aim, canceled ? release & fire, performed is ignored (held)
@@ -164,7 +218,16 @@ public class PlanInputHandler : MonoBehaviour
         if (ctx.started)
         {
             // If the press began over UI, block this entire drag/aim session
-            if (IsOverUI(screenPos)) { aimBlockedByUI = true; aiming = false; predictor?.Clear(); SFX(sfxAimBlocked); return; }
+            if (IsOverUI(screenPos))
+            {
+                aimBlockedByUI = true;
+                aiming = false;
+                predictor?.Clear();
+                SFX(sfxAimBlocked);
+
+                _aimLoopShouldPlay = false;            // ensure the loop is OFF if the aim is blocked
+                return;
+            }
 
             // Begin aiming
             aimBlockedByUI = false;
@@ -176,8 +239,10 @@ public class PlanInputHandler : MonoBehaviour
                 ? (Vector2)cam.WorldToScreenPoint(cannon.position)
                 : (Vector2)(cannon ? cannon.position : Vector2.zero);
 
-            predictor?.Show();  // Start showing the preview
-            SFX(sfxAimStart);   // --- Audio hook ---
+            predictor?.Show();                          // Start showing the preview
+            SFX(sfxAimStart);                           // --- Audio hook ---
+
+            _aimLoopShouldPlay = aimMoveIsLoop;         // tell Update() to fade IN the aim loop
             return;
         }
 
@@ -186,18 +251,28 @@ public class PlanInputHandler : MonoBehaviour
         if (ctx.canceled)
         {
             // If the drag started on UI, ignore the release and clear preview
-            if (aimBlockedByUI) { aimBlockedByUI = false; predictor?.Clear(); SFX(sfxAimCancel); return; }
+            if (aimBlockedByUI)
+            {
+                aimBlockedByUI = false;
+                predictor?.Clear();
+                SFX(sfxAimCancel);
+
+                _aimLoopShouldPlay = false;            // fade OUT if we were blocked
+                return;
+            }
             if (!aiming) return; // Defensive: ignore if we weren’t actually aiming
 
             // End of drag ? compute final v0 and fire
             aiming = false;
 
+            _aimLoopShouldPlay = false;                 // tell Update() to fade OUT the aim loop
+
             Vector2 v0 = MapDragToVelocity(aimOriginScreen, currentPosScreen);
             Vector2 originWorld = ScreenToWorld(aimOriginScreen);
-            predictor?.Clear();                                  // Hide preview
+            predictor?.Clear();                         // Hide preview
             Debug.Log($"[Plan] Fire v0={v0}");
-            SpawnProbe(originWorld, v0, probeType);              // Instantiate probe and initialize it
-            SFX(sfxFire);                                        // --- Audio hook ---
+            SpawnProbe(originWorld, v0, probeType);     // Instantiate probe and initialize it
+            SFX(sfxFire);                               // --- Audio hook ---
         }
     }
 
@@ -217,8 +292,11 @@ public class PlanInputHandler : MonoBehaviour
         // Draw/update the trajectory preview (predictor may simulate or just draw a parametric arc)
         predictor?.Draw(originWorld, v0);
 
-        // --- Audio hook (throttled move feedback) ---
-        if (Time.time >= _nextAimMoveSfxAt) { SFX(sfxAimMove); _nextAimMoveSfxAt = Time.time + aimMoveSfxInterval; }
+        // --- Audio hook (throttled move feedback for non-loop) ---
+        if (!aimMoveIsLoop)
+        {
+            if (Time.time >= _nextAimMoveSfxAt) { SFX(sfxAimMove); _nextAimMoveSfxAt = Time.time + aimMoveSfxInterval; }
+        }
     }
 
     // -----------------------------

@@ -426,9 +426,8 @@ public class ShipController : MonoBehaviour
             transform.position = spawnPos;          // Keep exactly at spawn
         }
 
-        // Query total field acceleration from the FieldManager at our current state
-        // NOTE: If you want to avoid ALL field pull before launch, gate with (launched && fields) ? ... : Vector2.zero
-        Vector2 a = fields ? fields.AccelAt(pos, vel, Time.time) : Vector2.zero;
+        // Query total field acceleration from the FieldManager at our current state (while launched and fields exist)
+        Vector2 a = (launched && fields) ? fields.AccelAt(pos, vel, Time.time) : Vector2.zero;
 
         // Thrust only engages if the player is pressing AND there’s enough fuel
         bool canThrust = thrusting && fuel > minFuelToThrust;
@@ -558,6 +557,16 @@ public class ShipController : MonoBehaviour
         if (sfxLose) AudioManager.I?.PlaySFX(sfxLose);
 
         onLose.Invoke();  // PhaseDirector.UI_RestartFly()
+    }
+
+    // Stop the engine thrust noise on disable to prevent it from lingering if the ship is turned off mid-fade
+    void OnDisable()
+    {
+        if (engineLoop)
+        {
+            engineLoop.Stop();   // hard stop just in case the object is disabled mid-fade
+            engineLoop.volume = 0f;
+        }
     }
 
 }

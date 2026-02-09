@@ -2,4 +2,3 @@ v1.8.4
 
 - during Fly Phase, using the calibration button while still docked in the launcher area slightly nudges the ship toward the acceleration of the level (towards the gravity well in the current sample level); the launch lock remains active.
 
-- on Win Phase (level completion), the ship sometimes very slowly moves towards the gravity well. Upon collision with the well, the Fly Phase restarts, but the player no longer has access to controls because the Win Phase was never exited properly.

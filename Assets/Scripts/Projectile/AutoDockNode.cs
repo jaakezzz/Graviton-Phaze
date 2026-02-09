@@ -119,6 +119,11 @@ public class AutoDockNode : MonoBehaviour
     public JetstreamOverrides jetstream = new();
     public VortexOverrides vortex = new();
 
+    // --- Audio (optional) ---
+    [Header("Audio (optional)")]
+    [SerializeField] AudioClip sfxDockAccept;      // played only on successful dock
+
+
     // Track the currently spawned anchor so we can clear/replace it.
     [HideInInspector] public GameObject activeAnchorGO;
 
@@ -295,6 +300,7 @@ public class AutoDockNode : MonoBehaviour
         {
             _lastDockedType = type;
             SetOccupiedVisual(type);     // switch to the correct occupied sprite + manage arrow
+            SFX(sfxDockAccept);          // only plays on a successful dock
         }
         UpdateJetstreamArrowVisual();
 
@@ -488,6 +494,13 @@ public class AutoDockNode : MonoBehaviour
         // Rotate arrow so that its "up" faces dir.
         float ang = Vector2.SignedAngle(Vector2.up, dir.normalized);
         jetArrow.transform.localRotation = Quaternion.Euler(0f, 0f, ang);
+    }
+
+    // Safe audio helper: uses AudioManager if present, otherwise a one-shot 2D/3D at this node.
+    void SFX(AudioClip clip)
+    {
+        if (!clip) return;
+        if (AudioManager.I != null) AudioManager.I.PlaySFX(clip);
     }
 
 }

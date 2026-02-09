@@ -2672,7 +2672,8 @@ MonoBehaviour:
   sfxRestartLevel: {fileID: 8300000, guid: 76c2ddb4269b72c4e9e00b20f1ff12da, type: 3}
   sfxClearDocks: {fileID: 8300000, guid: 965f8a78f463be44baaa1e636b7a2247, type: 3}
   sfxCalibrate: {fileID: 8300000, guid: 8b23b3c64f578e047b3b42122cde567b, type: 3}
-  sfxFirstLaunch: {fileID: 0}
+  sfxFirstLaunch: {fileID: 8300000, guid: 27ac2db6c876fd74e84db397686f731b, type: 3}
+  sfxReturnToMenu: {fileID: 0}
   musicPlan: {fileID: 0}
   musicFly: {fileID: 0}
   musicWin: {fileID: 0}
@@ -5375,13 +5376,17 @@ MonoBehaviour:
   powerCurve: 0.85
   probePrefab: {fileID: -5827647368792128715, guid: c747f2c7db89c624098cd8aac52a53e8, type: 3}
   fieldManager: {fileID: 224024779}
-  sfxAimStart: {fileID: 0}
-  sfxAimMove: {fileID: 0}
+  sfxAimStart: {fileID: 8300000, guid: dc8632275bb831e4fb4d710a060ebec2, type: 3}
+  sfxAimMove: {fileID: 8300000, guid: 3f194f2289da6a642ac31bb4a21b5336, type: 3}
   sfxAimBlocked: {fileID: 0}
   sfxAimCancel: {fileID: 0}
-  sfxFire: {fileID: 0}
-  sfxSwapProbe: {fileID: 0}
+  sfxFire: {fileID: 8300000, guid: 506a1385aeb448649b5eadc05a28136c, type: 3}
+  sfxSwapProbe: {fileID: 8300000, guid: 525f192ff5617f24393b704e978ab5df, type: 3}
   aimMoveSfxInterval: 0.08
+  aimMoveIsLoop: 1
+  aimLoopFadeIn: 8
+  aimLoopFadeOut: 8
+  sfxBus: {fileID: 5311325470503102294, guid: 3aeb443306872a0468a04f9bfe830023, type: 2}
 --- !u!114 &2102439640
 MonoBehaviour:
   m_ObjectHideFlags: 0

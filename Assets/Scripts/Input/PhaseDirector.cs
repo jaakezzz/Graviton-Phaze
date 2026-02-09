@@ -57,6 +57,8 @@ public class PhaseDirector : MonoBehaviour
     [SerializeField] AudioClip sfxCalibrate;
     [Tooltip("Play once the first time the ship actually launches in a flight.")]
     [SerializeField] AudioClip sfxFirstLaunch;
+    [Tooltip("Play when returning to the main menu.")]
+    [SerializeField] AudioClip sfxReturnToMenu;
 
     [Space(6)]
     [Tooltip("Music clip to switch to while in Plan.")]
@@ -207,6 +209,7 @@ public class PhaseDirector : MonoBehaviour
     /// </summary>
     public void EnterFly()
     {
+        Debug.Log("[PD] EnterFly()");
         current = Phase.Fly;
         EnsureFly();
 
@@ -348,6 +351,8 @@ public class PhaseDirector : MonoBehaviour
     /// </summary>
     public void UI_RestartFly()
     {
+        Debug.Log("[PD] UI_RestartFly()");
+
         // --- Audio hook ---
         SFX(sfxRestartFly);
 
@@ -414,6 +419,7 @@ public class PhaseDirector : MonoBehaviour
     /// </summary>
     public void UI_ReturnToMenu()
     {
+        SFX(sfxReturnToMenu);
         SceneManager.LoadScene("MainMenu");
     }
 
@@ -448,6 +454,7 @@ public class PhaseDirector : MonoBehaviour
     void SFX(AudioClip clip)
     {
         if (clip == null) return;
+        Debug.Log($"[PD] SFX: {clip.name}");
         AudioManager.I?.PlaySFX(clip);
     }
 

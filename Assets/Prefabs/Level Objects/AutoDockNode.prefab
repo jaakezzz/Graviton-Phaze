@@ -136,6 +136,8 @@ MonoBehaviour:
     radius: 1
     aMax: 3
     clockwise: 1
+  sfxDockAccept: {fileID: 8300000, guid: eb569b6a9fc2e114d835c68fee7946e0, type: 3}
+  sfxVolume: 1
   activeAnchorGO: {fileID: 0}
   targetRenderer: {fileID: 4661586395788933511}
   comboTable:
