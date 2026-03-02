@@ -15,6 +15,6 @@ public class GoalTrigger : MonoBehaviour
         if (!other.GetComponent<ShipController>() &&
             !other.GetComponentInParent<ShipController>()) return;
 
-        director?.EnterWin();
+        director?.EnterWin(transform);
     }
 }

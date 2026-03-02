@@ -2665,8 +2665,11 @@ MonoBehaviour:
   levelConfig: {fileID: 11400000, guid: 2bea572103ce0ba4e9b7f0823527fa9e, type: 2}
   winHUDscript: {fileID: 1362676653}
   startPhase: 0
+  winSequenceDuration: 1.2
+  winSequenceSpin: 360
   sfxEnterPlan: {fileID: 0}
   sfxEnterFly: {fileID: 0}
+  sfxWinLevel: {fileID: 8300000, guid: e8b71bb72837e044d920840c305977be, type: 3}
   sfxEnterWin: {fileID: 8300000, guid: cf663ef7d217ab4488f65c12078bc310, type: 3}
   sfxRestartFly: {fileID: 8300000, guid: 965f8a78f463be44baaa1e636b7a2247, type: 3}
   sfxRestartLevel: {fileID: 8300000, guid: 76c2ddb4269b72c4e9e00b20f1ff12da, type: 3}

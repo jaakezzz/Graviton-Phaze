@@ -50,6 +50,11 @@ public class ShipController : MonoBehaviour
     [SerializeField] float burstCost = 4.5f;        // One-shot fuel subtraction when double-tap burst triggers
     [SerializeField] float minFuelToThrust = 0.05f; // Threshold: below this, thrust doesn’t engage
 
+    [Header("VFX")]
+    [SerializeField] Animator exhaustAnimator;        // regular thrust exhaust animator
+    [SerializeField] Animator burstExhaustAnimator;   // one-shot burst exhaust animator
+    static readonly int AnimIsThrusting = Animator.StringToHash("IsThrusting");
+
     // -----------------------------
     // Launch gating: pin ship at spawn until player spends fuel
     // -----------------------------
@@ -170,6 +175,9 @@ public class ShipController : MonoBehaviour
             engineLoop.playOnAwake = false;
             engineLoop.volume = 0f;
         }
+
+        if (!exhaustAnimator)
+            exhaustAnimator = GetComponentInChildren<Animator>(true);
     }
 
     // ----------------------------------------
@@ -209,6 +217,17 @@ public class ShipController : MonoBehaviour
         spawnPos = transform.position;
         launched = !lockUntilThrust ? true : false;  // If lockUntilThrust is false, start launched immediately
 
+        // Reset exhaust animation state
+        if (exhaustAnimator)
+            exhaustAnimator.SetBool(AnimIsThrusting, false);
+
+        // Reset burst exhaust animation to idle (in case it was mid-burst when reset)
+        if (burstExhaustAnimator)
+        {
+            burstExhaustAnimator.ResetTrigger("Burst");
+            burstExhaustAnimator.Play("Idle", 0, 0f);
+        }
+
         // Reset engine audio state
         engineShouldPlay = false;
         if (engineLoop)
@@ -235,6 +254,17 @@ public class ShipController : MonoBehaviour
         spawnPos = pos;
         launched = !relockUntilThrust;
 
+        // Reset exhaust animation state
+        if (exhaustAnimator)
+            exhaustAnimator.SetBool(AnimIsThrusting, false);
+
+        // Reset burst exhaust animation to idle (in case it was mid-burst when reset)
+        if (burstExhaustAnimator)
+        {
+            burstExhaustAnimator.ResetTrigger("Burst");
+            burstExhaustAnimator.Play("Idle", 0, 0f);
+        }
+
         // heading & input smoothing
         yawDeg = 0f;
         tiltDegCurrent = 0f;
@@ -254,6 +284,22 @@ public class ShipController : MonoBehaviour
             engineLoop.volume = 0f;
             engineLoop.Pause();
         }
+    }
+
+    // -----------------------------
+    // Win sequence prep: stop all gameplay behavior so the director can animate the ship manually
+    // -----------------------------
+    public void PrepareForWinSequence()
+    {
+        // Stop all input-driven state and audio immediately
+        ClearInputState(alsoZeroTilt: true);
+
+        // Stop movement and prevent any more gameplay motion
+        vel = Vector2.zero;
+        launched = false;
+
+        // Disable this controller so FixedUpdate / Update / Lose checks no longer run
+        enabled = false;
     }
 
     // =========================
@@ -281,6 +327,7 @@ public class ShipController : MonoBehaviour
         else if (ctx.canceled)
         {
             thrusting = false;                   // Stop thrusting on release
+
             // AUDIO: thrust end blip
             if (sfxThrustEnd) AudioManager.I?.PlaySFX(sfxThrustEnd);
         }
@@ -316,6 +363,9 @@ public class ShipController : MonoBehaviour
         if (!launched) { launched = true; onFirstLaunch.Invoke(); if (sfxFirstLaunch) AudioManager.I?.PlaySFX(sfxFirstLaunch); } // count launch (+ SFX)
         vel += HeadingDir() * burstImpulse;                         // Add forward impulse
         onFuelChanged.Invoke(fuel, startFuel);                      // Notify UI
+
+        // VFX: trigger burst exhaust animation
+        burstExhaustAnimator?.SetTrigger("Burst");
 
         // AUDIO: burst
         if (sfxBurst) AudioManager.I?.PlaySFX(sfxBurst);
@@ -432,6 +482,10 @@ public class ShipController : MonoBehaviour
         // Thrust only engages if the player is pressing AND there’s enough fuel
         bool canThrust = thrusting && fuel > minFuelToThrust;
 
+        // VFX: update exhaust animation state based on whether canThrust is true
+        if (exhaustAnimator)
+            exhaustAnimator.SetBool(AnimIsThrusting, canThrust);
+
         // Apply thrust along the ship’s current heading; burn fuel accordingly
         if (canThrust)
         {
@@ -505,6 +559,9 @@ public class ShipController : MonoBehaviour
         thrusting = false;
         sustained = false;
         engineShouldPlay = false;
+
+        if (exhaustAnimator)
+            exhaustAnimator.SetBool(AnimIsThrusting, false);
 
         if (engineLoop) { engineLoop.volume = 0f; engineLoop.Pause(); }
 

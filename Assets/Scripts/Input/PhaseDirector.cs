@@ -39,12 +39,20 @@ public class PhaseDirector : MonoBehaviour
     [Header("Startup")]
     [SerializeField] Phase startPhase = Phase.Plan;       // Which phase to start in
 
+    [Tooltip("How long the win sequence lasts before the Win HUD appears.")]
+    [SerializeField] float winSequenceDuration = 1.2f;    // Length of the Win sequence (delay before showing Win HUD)
+
+    [Tooltip("How many degrees the ship rotates during the win sequence.")]
+    [SerializeField] float winSequenceSpin = 360f;
+
     // ---------- Audio (optional) ----------
     [Header("Audio (optional)")]
     [Tooltip("Play this when entering Plan.")]
     [SerializeField] AudioClip sfxEnterPlan;
     [Tooltip("Play this when entering Fly.")]
     [SerializeField] AudioClip sfxEnterFly;
+    [Tooltip("Play this immediately when the player reaches the goal, before the Win HUD appears.")]
+    [SerializeField] AudioClip sfxWinLevel;
     [Tooltip("Play this when entering Win.")]
     [SerializeField] AudioClip sfxEnterWin;
     [Tooltip("Play this when a flight is restarted (lose or retry).")]
@@ -248,34 +256,111 @@ public class PhaseDirector : MonoBehaviour
     }
 
     /// <summary>
-    /// Enter win: freeze ship in place, compute stars, show Win HUD, disable gameplay maps.
+    /// Enter win: begin the short win sequence, then compute stars, show Win HUD, disable gameplay maps.
     /// </summary>
     public void EnterWin()
     {
+        // Fallback if no specific goal transform is supplied
+        EnterWin(null);
+    }
+
+    /// <summary>
+    /// Enter win using a specific goal transform as the animation target.
+    /// </summary>
+    public void EnterWin(Transform goalTarget)
+    {
+        // Guard against duplicate win calls
+        if (current == Phase.Win) return;
+
         current = Phase.Win;
+        StartCoroutine(EnterWinSequence(goalTarget));
+    }
 
-        // Keep ship visible but frozen where it finished.
+    IEnumerator EnterWinSequence(Transform goalTarget)
+    {
+        // Make sure we have the fly instance
         EnsureFly();
-        if (shipHandler)
-        {
-            var here = (Vector2)shipHandler.transform.position;
-            shipHandler.RestartAt(here, resetFuel: false, relockUntilThrust: true);
-        }
 
-        // HUDs
+        // Hide gameplay HUDs immediately; Win HUD comes later after the sequence
         if (planHUD) planHUD.SetActive(false);
         if (flyHUD) flyHUD.SetActive(false);
-        if (winHUD) winHUD.SetActive(true);
+        if (winHUD) winHUD.SetActive(false);
 
-        // Disable Plan/Fly action maps (UI still works via EventSystem's UI module)
+        // Disable gameplay action maps immediately (UI still works later through EventSystem)
         if (playerInput && playerInput.actions != null)
         {
             foreach (var m in playerInput.actions.actionMaps) m.Disable();
         }
 
-        // Optional: disable attitude sensor while in Win
+        // Disable attitude sensor during the win sequence
         if (AttitudeSensor.current != null && AttitudeSensor.current.enabled)
             InputSystem.DisableDevice(AttitudeSensor.current);
+
+        // Play the immediate "level won" stinger
+        SFX(sfxWinLevel);
+
+        // Animate the ship toward the goal, rotate it, and shrink it away
+        if (shipHandler != null)
+        {
+            // Stop all gameplay behavior so the director can animate safely
+            shipHandler.PrepareForWinSequence();
+
+            Transform shipT = shipHandler.transform;
+
+            Vector3 startPos = shipT.position;
+            Vector3 endPos = goalTarget ? goalTarget.position : shipT.position;
+
+            Vector3 startScale = shipT.localScale;
+            Vector3 endScale = Vector3.zero;
+
+            float startAngle = shipT.eulerAngles.z;
+            float endAngle = startAngle + winSequenceSpin;
+
+            float elapsed = 0f;
+            float duration = Mathf.Max(0.01f, winSequenceDuration);
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+
+                // Smooth, slightly nicer-looking motion than plain linear interpolation
+                float eased = Mathf.SmoothStep(0f, 1f, t);
+
+                shipT.position = Vector3.Lerp(startPos, endPos, eased);
+
+                Vector2 toGoal = (Vector2)endPos - (Vector2)shipT.position;
+                if (toGoal.sqrMagnitude > 0.0001f)
+                {
+                    Quaternion targetRot = Quaternion.FromToRotation(Vector3.up, toGoal.normalized);
+                    shipT.rotation = Quaternion.Slerp(shipT.rotation, targetRot, 10f * Time.deltaTime);
+                }
+
+                shipT.localScale = Vector3.Lerp(startScale, endScale, eased);
+
+                yield return null;
+            }
+
+            // Clean up the ship so restarting the level/fly phase respawns it fresh
+            if (flyGO)
+                Destroy(flyGO);
+
+            flyGO = null;
+            shipHandler = null;
+        }
+        else
+        {
+            // If no ship exists for some reason, still respect the delay
+            yield return new WaitForSeconds(winSequenceDuration);
+        }
+
+        FinishEnterWin();
+    }
+
+    void FinishEnterWin()
+    {
+        // Show Win HUD now that the sequence is complete
+        if (winHUD) winHUD.SetActive(true);
 
         // Render stars/stats
         if (actions && winHUDscript)
@@ -285,8 +370,10 @@ public class PhaseDirector : MonoBehaviour
             winHUDscript.Render(stars, total, par, probes, launches);
         }
 
-        // --- Audio hooks ---
+        // Play the existing Win HUD entry sound only AFTER the delay/animation
         SFX(sfxEnterWin);
+
+        // Switch to win music now that the panel is appearing
         if (changeMusicOnPhase) Music(musicWin);
     }
 
