@@ -83,6 +83,7 @@ public class PhaseDirector : MonoBehaviour
     // =========================
     GameObject planGO, flyGO;         // Spawned instances
     PlanInputHandler planHandler;     // Found on Plan instance (or scene InputRouter)
+    LevelConfig activeLevelConfig;   // resolved level: selected level first, inspector fallback second
     ShipController shipHandler;       // Found on Fly instance
     Phase current;                    // Current phase
 
@@ -105,8 +106,20 @@ public class PhaseDirector : MonoBehaviour
 
     void Start()
     {
+        // Resolve which level this scene should use.
+        activeLevelConfig = ResolveLevelConfig();
+
+        if (activeLevelConfig == null)
+        {
+            Debug.LogWarning("PhaseDirector: No LevelConfig resolved. Assign one in Inspector or select one before loading GameScene.");
+        }
+
         // Provide config to LevelActions and reset counters for this level.
-        if (actions) { actions.SetConfig(levelConfig); actions.ResetForLevel(); }
+        if (actions && activeLevelConfig != null)
+        {
+            actions.SetConfig(activeLevelConfig);
+            actions.ResetForLevel();
+        }
 
         // Enter the requested start phase.
         if (startPhase == Phase.Fly) EnterFly(); else EnterPlan();
@@ -179,6 +192,34 @@ public class PhaseDirector : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Resolve the active LevelConfig, preferring the one selected from menu/database but falling back to the inspector-assigned one if necessary.
+    ///     Maybe later we can change the fallback to a safe UI prompt instead of just silently using the inspector config,
+    ///         but for now this allows quick testing by just assigning a LevelConfig in the inspector and hitting Play on the scene.
+    /// Note that the resolved LevelConfig is not currently cached, but it could be if we find that ResolveLevelConfig() is being called frequently and causing performance issues.
+    /// <</summary>
+    LevelConfig ResolveLevelConfig()
+    {
+        // Prefer the level chosen from menu/database.
+        if (LevelSelectionService.SelectedLevel != null)
+            return LevelSelectionService.SelectedLevel;
+
+        // Fallback so the scene still works when launched directly from the editor.
+        return levelConfig;
+    }
+
+    /// <summary>
+    /// Applies this level's configured starting fuel to the current ship.
+    /// Keeps fuel setup centralized in the active LevelConfig.
+    /// </summary>
+    void ApplyLevelFuelToShip()
+    {
+        if (shipHandler == null) return;
+        if (activeLevelConfig == null) return;
+
+        shipHandler.SetFuel(activeLevelConfig.startFuel);
+    }
+
     // =========================
     // Phase switches
     // =========================
@@ -220,6 +261,9 @@ public class PhaseDirector : MonoBehaviour
         Debug.Log("[PD] EnterFly()");
         current = Phase.Fly;
         EnsureFly();
+
+        // Apply level-configured starting fuel to the ship on every fly entry
+        ApplyLevelFuelToShip();
 
         // Make sure lose/launch listeners are wired
         if (shipHandler != null)
@@ -444,6 +488,14 @@ public class PhaseDirector : MonoBehaviour
         SFX(sfxRestartFly);
 
         EnsureFly();
+
+        // Re-resolve in case the scene was entered without Start() using the selected level path.
+        if (activeLevelConfig == null)
+            activeLevelConfig = ResolveLevelConfig();
+
+        // Re-apply level-configured starting fuel on every fly restart (lose or manual restart)
+        // so the ship's internal startFuel matches the current level before RestartAt() resets runtime fuel.
+        ApplyLevelFuelToShip();
 
         // Reset ship at the fly spawn point; keep anchors; reset fuel & relock
         var pos = flySpawn ? (Vector2)flySpawn.position : Vector2.zero;

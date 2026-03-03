@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1177eb88c3090ff42a1574aa04dbc9f3, type: 3}
+  m_Name: PresetLevel1_Config
+  m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
+  levelID: 0
+  levelName: New Level
+  description: Level description goes here.
+  minActionsForFiveStars: 2
+  startFuel: 5
+  playerSpawnPosition: {x: 0, y: -4.15}
+  goalPosition: {x: 0, y: 4.44}
+  gravityWells:
+  - position: {x: -1.2, y: 1}
+    strength: 0
+    epsilon: 0.3
+    accelClamp: 15
+  dockNodes:
+  - position: {x: 1, y: 1}
+    acceptStabilizer: 1
+    acceptRepulsor: 1
+    acceptJetstream: 1
+    acceptVortex: 0
+    overrideStabilizer: 0
+    stabilizerU0: 0
+    stabilizerR: 0
+    stabilizerAccelClamp: 0
+    overrideRepulsor: 0
+    repulsorS: 0
+    repulsorEpsilon: 0
+    overrideJetstream: 0
+    jetstreamE: {x: 0, y: 3}
+    jetstreamRadius: 2
+    overrideVortex: 0
+    vortexOmega: 0
+    vortexRadius: 0
+    vortexAMax: 0
+    vortexClockwise: 0

@@ -1,21 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Flags]
-public enum ProbeTypeMask
-{
-    None = 0,
-    Stabilizer = 1 << 0, // S
-    Repulsor = 1 << 1, // R
-    Jetstream = 1 << 2, // J
-    Vortex = 1 << 3, // V
-}
-
 [System.Serializable]
 public struct ComboSprite
 {
-    [Tooltip("Choose the exact combination this sprite represents (e.g., S|R|J).")]
-    public ProbeTypeMask mask;
+    [Tooltip("Exact combo key, e.g. S, R, J, V, SR, SJ, SRJV")]
+    public string key;
     [Tooltip("Sprite to use for this combination.")]
     public Sprite sprite;
 }
@@ -155,7 +145,7 @@ public class AutoDockNode : MonoBehaviour
     [SerializeField] Sprite occupiedVortexSprite;
 
     // Fast lookup at runtime
-    Dictionary<ProbeTypeMask, Sprite> _comboLookup;
+    Dictionary<string, Sprite> _comboLookup;
 
     // Track which probe type last docked (to decide arrow visibility & occupied sprite)
     ProbeType? _lastDockedType = null;
@@ -163,7 +153,7 @@ public class AutoDockNode : MonoBehaviour
     void Awake()
     {
         if (!targetRenderer) targetRenderer = GetComponent<SpriteRenderer>();
-        if (!jetArrow) jetArrow = GetComponentInChildren<SpriteRenderer>(true); // tries to find arrow automatically
+        TryResolveJetArrow();
         BuildComboLookup();
         RefreshDockVisuals();
     }
@@ -172,6 +162,7 @@ public class AutoDockNode : MonoBehaviour
     void OnValidate()
     {
         if (!targetRenderer) targetRenderer = GetComponent<SpriteRenderer>();
+        TryResolveJetArrow();
         BuildComboLookup();
         // Update immediately in editor when toggles change
         if (!Application.isPlaying) RefreshDockVisuals();
@@ -354,25 +345,65 @@ public class AutoDockNode : MonoBehaviour
 
     // ===== visuals helpers =====
 
-    void BuildComboLookup()
+    void TryResolveJetArrow()
     {
-        if (_comboLookup == null) _comboLookup = new Dictionary<ProbeTypeMask, Sprite>();
-        _comboLookup.Clear();
-        if (comboTable == null) return;
-        foreach (var e in comboTable)
+        if (jetArrow) return;
+
+        var renderers = GetComponentsInChildren<SpriteRenderer>(true);
+        foreach (var sr in renderers)
         {
-            _comboLookup[e.mask] = e.sprite; // later entries override earlier ones if duplicated
+            // Skip the main dock renderer; use the first different sprite renderer as arrow
+            if (sr != null && sr != targetRenderer)
+            {
+                jetArrow = sr;
+                break;
+            }
         }
     }
 
-    ProbeTypeMask CurrentMask()
+    void BuildComboLookup()
     {
-        ProbeTypeMask m = ProbeTypeMask.None;
-        if (acceptStabilizer) m |= ProbeTypeMask.Stabilizer;
-        if (acceptRepulsor) m |= ProbeTypeMask.Repulsor;
-        if (acceptJetstream) m |= ProbeTypeMask.Jetstream;
-        if (acceptVortex) m |= ProbeTypeMask.Vortex;
-        return m;
+        if (_comboLookup == null) _comboLookup = new Dictionary<string, Sprite>();
+        _comboLookup.Clear();
+        if (comboTable == null) return;
+
+        foreach (var e in comboTable)
+        {
+            if (string.IsNullOrWhiteSpace(e.key)) continue;
+
+            string normalized = NormalizeComboKey(e.key);
+            _comboLookup[normalized] = e.sprite; // later entries override earlier ones if duplicated
+        }
+    }
+
+    string CurrentComboKey()
+    {
+        string key = "";
+
+        if (acceptStabilizer) key += "S";
+        if (acceptRepulsor) key += "R";
+        if (acceptJetstream) key += "J";
+        if (acceptVortex) key += "V";
+
+        return key;
+    }
+
+    string NormalizeComboKey(string raw)
+    {
+        if (string.IsNullOrEmpty(raw)) return "";
+
+        bool s = raw.Contains("S");
+        bool r = raw.Contains("R");
+        bool j = raw.Contains("J");
+        bool v = raw.Contains("V");
+
+        string key = "";
+        if (s) key += "S";
+        if (r) key += "R";
+        if (j) key += "J";
+        if (v) key += "V";
+
+        return key;
     }
 
     public void RefreshDockVisuals()
@@ -401,21 +432,21 @@ public class AutoDockNode : MonoBehaviour
         }
 
         // Not occupied ? revert to base combo sprite
-        var mask = CurrentMask();
-        if (mask == ProbeTypeMask.None)
+        string key = CurrentComboKey();
+        if (string.IsNullOrEmpty(key))
         {
             targetRenderer.sprite = null; // or keep previous if you prefer
             return;
         }
 
-        if (_comboLookup != null && _comboLookup.TryGetValue(mask, out var sp) && sp != null)
+        if (_comboLookup != null && _comboLookup.TryGetValue(key, out var sp) && sp != null)
         {
             targetRenderer.sprite = sp;
         }
         else
         {
             if (warnIfMissing)
-                Debug.LogWarning($"AutoDockNode '{name}': No combo sprite assigned for mask '{mask}'.");
+                Debug.LogWarning($"AutoDockNode '{name}': No combo sprite assigned for key '{key}'.");
             targetRenderer.sprite = null; // ensure we don't leave a stale sprite
         }
     }
@@ -502,5 +533,4 @@ public class AutoDockNode : MonoBehaviour
         if (!clip) return;
         if (AudioManager.I != null) AudioManager.I.PlaySFX(clip);
     }
-
 }

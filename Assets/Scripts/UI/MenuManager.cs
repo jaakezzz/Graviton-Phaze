@@ -9,10 +9,10 @@ public class MenuManager : MonoBehaviour
     [Tooltip("Scene to load when Play is pressed.")]
     [SerializeField] string gameScene = "GameScene";
 
-    [Tooltip("If you keep Settings in a separate scene, put its name here. Leave blank if using a panel.")]
-    [SerializeField] string settingsScene = "";
+    [Tooltip("Assign the list of levels.")]
+    [SerializeField] LevelDatabase levelDatabase;
 
-    [Header("Optional In-Scene Panels")]
+    [Header("In-Scene Panels")]
     [Tooltip("Assign if your Settings is a panel in this scene.")]
     [SerializeField] GameObject settingsPanel;
 
@@ -56,11 +56,29 @@ public class MenuManager : MonoBehaviour
             SceneManager.LoadScene(gameScene);
     }
 
+    public void LoadLevelByIndex(int index)
+    {
+        if (levelDatabase == null)
+        {
+            Debug.LogWarning("MainMenuLevelSelect: No LevelDatabase assigned.");
+            return;
+        }
+
+        if (index < 0 || index >= levelDatabase.levels.Length)
+        {
+            Debug.LogWarning($"MainMenuLevelSelect: Invalid level index {index}.");
+            return;
+        }
+
+        LevelSelectionService.SelectedLevel = levelDatabase.levels[index];
+        SceneManager.LoadScene(gameScene);
+    }
+
     public void OnSettings()
     {
         PlayClick();
         if (settingsPanel) settingsPanel.SetActive(true);
-        else if (!string.IsNullOrEmpty(settingsScene)) SceneManager.LoadScene(settingsScene);
+        else Debug.LogWarning("MenuManager: No settings panel assigned.");
     }
 
     public void OnCalibrateGyroButton()
