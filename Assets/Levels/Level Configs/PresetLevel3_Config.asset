@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1177eb88c3090ff42a1574aa04dbc9f3, type: 3}
-  m_Name: PresetLevel2_Config
+  m_Name: PresetLevel3_Config
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
   levelID: 0
   levelName: New Level
@@ -20,30 +20,34 @@ MonoBehaviour:
   playerSpawnPosition: {x: -1, y: -4.15}
   goalPosition: {x: 1, y: 4.44}
   gravityWells:
-  - position: {x: -1.2, y: 2}
-    strength: 12
+  - position: {x: -1, y: 1}
+    strength: 10
     epsilon: 0.3
-    accelClamp: 12
-  - position: {x: 0.6, y: -0.4}
-    strength: 15
+    accelClamp: 10
+  - position: {x: -2, y: 2}
+    strength: 8
     epsilon: 0.3
-    accelClamp: 15
+    accelClamp: 8
+  - position: {x: 2, y: -1}
+    strength: 13
+    epsilon: 0.3
+    accelClamp: 13
   dockNodes:
-  - position: {x: -0.8, y: 0.4}
+  - position: {x: 0, y: 0}
     acceptStabilizer: 1
-    acceptRepulsor: 0
+    acceptRepulsor: 1
     acceptJetstream: 1
     acceptVortex: 0
-    overrideStabilizer: 1
-    stabilizerU0: 7
-    stabilizerR: 2
-    stabilizerAccelClamp: 10
+    overrideStabilizer: 0
+    stabilizerU0: 0
+    stabilizerR: 0
+    stabilizerAccelClamp: 0
     overrideRepulsor: 0
     repulsorS: 0
     repulsorEpsilon: 0
     overrideJetstream: 1
-    jetstreamE: {x: 2, y: 3}
-    jetstreamRadius: 2
+    jetstreamE: {x: -5, y: -5}
+    jetstreamRadius: 3
     overrideVortex: 0
     vortexOmega: 0
     vortexRadius: 0

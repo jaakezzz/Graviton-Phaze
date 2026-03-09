@@ -12,12 +12,18 @@ public class MenuManager : MonoBehaviour
     [Tooltip("Assign the list of levels.")]
     [SerializeField] LevelDatabase levelDatabase;
 
-    [Header("In-Scene Panels")]
-    [Tooltip("Assign if your Settings is a panel in this scene.")]
+    [Header("In-Scene Canvas/Panels")]
+    [Tooltip("Assign the Main Menu canvas.")]
+    [SerializeField] GameObject mainMenuCanvas;
+
+    [Tooltip("Assign Settings panel.")]
     [SerializeField] GameObject settingsPanel;
 
-    [Tooltip("Assign if you want a Quit confirm popup.")]
+    [Tooltip("Assign a Quit confirm popup.")]
     [SerializeField] GameObject quitConfirmPanel;
+
+    [Tooltip("Assign the Level Select canvas.")]
+    [SerializeField] GameObject levelSelectCanvas;
 
     // ======================
     // Audio hooks
@@ -49,11 +55,18 @@ public class MenuManager : MonoBehaviour
     }
 
     // ----- Buttons -----
-    public void OnPlay()
+    public void ShowMainMenu()
     {
-        PlayConfirm();
-        if (!string.IsNullOrEmpty(gameScene))
-            SceneManager.LoadScene(gameScene);
+        PlayBack();
+        if (mainMenuCanvas) mainMenuCanvas.SetActive(true);
+        if (levelSelectCanvas) levelSelectCanvas.SetActive(false);
+    }
+
+    public void ShowLevelSelect()
+    {
+        PlayClick();
+        if (mainMenuCanvas) mainMenuCanvas.SetActive(false);
+        if (levelSelectCanvas) levelSelectCanvas.SetActive(true);
     }
 
     public void LoadLevelByIndex(int index)
