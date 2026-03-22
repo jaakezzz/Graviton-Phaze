@@ -148,6 +148,8 @@ public class LevelBuilder : MonoBehaviour
             well.S = data.strength;
             well.eps = data.epsilon;
 
+            well.UpdateVisuals();
+
             spawnedObjects.Add(well.gameObject);
         }
     }
@@ -201,6 +203,8 @@ public class LevelBuilder : MonoBehaviour
         dock.jetstream.apply = data.overrideJetstream;
         dock.jetstream.E = data.jetstreamE;
         dock.jetstream.radius = data.jetstreamRadius;
+        dock.jetstream.smoothEdges = data.jetstreamSmoothEdges;
+        dock.jetstream.R = data.jetstreamR;
 
         // Vortex overrides
         dock.vortex.apply = data.overrideVortex;

@@ -353,7 +353,7 @@ MonoBehaviour:
   fields: {fileID: 0}
   cam: {fileID: 0}
   uiCanvas: {fileID: 0}
-  cameraMargin: 1.5
+  cameraMargin: 0.25
   thrustAccel: 1
   sustainBoost: 1
   burstImpulse: 4

@@ -13,33 +13,35 @@ MonoBehaviour:
   m_Name: PresetLevel1_Config
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
   levelID: 0
-  levelName: New Level
-  description: Level description goes here.
+  levelName: Death Well
+  description: Extremely strong singular gravity well.
   minActionsForFiveStars: 2
   startFuel: 5
   playerSpawnPosition: {x: 0, y: -4.15}
   goalPosition: {x: 0, y: 4.44}
   gravityWells:
   - position: {x: -1.2, y: 1}
-    strength: 0
+    strength: 100
     epsilon: 0.3
-    accelClamp: 15
+    accelClamp: 25
   dockNodes:
   - position: {x: 1, y: 1}
     acceptStabilizer: 1
     acceptRepulsor: 1
     acceptJetstream: 1
     acceptVortex: 0
-    overrideStabilizer: 0
-    stabilizerU0: 0
-    stabilizerR: 0
-    stabilizerAccelClamp: 0
+    overrideStabilizer: 1
+    stabilizerU0: 50
+    stabilizerR: 4
+    stabilizerAccelClamp: 50
     overrideRepulsor: 0
     repulsorS: 0
     repulsorEpsilon: 0
-    overrideJetstream: 0
-    jetstreamE: {x: 0, y: 3}
+    overrideJetstream: 1
+    jetstreamE: {x: -2, y: 32}
     jetstreamRadius: 2
+    jetstreamSmoothEdges: 0
+    jetstreamR: 5
     overrideVortex: 0
     vortexOmega: 0
     vortexRadius: 0

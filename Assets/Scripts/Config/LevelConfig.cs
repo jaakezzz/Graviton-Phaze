@@ -49,13 +49,21 @@ public class LevelConfig : ScriptableObject
         public float stabilizerR = 1.5f;
         public float stabilizerAccelClamp = 0f;
 
+        [Space]
+
         public bool overrideRepulsor = false;
         public float repulsorS = -6f;
         public float repulsorEpsilon = 0.1f;
 
+        [Space]
+
         public bool overrideJetstream = false;
         public Vector2 jetstreamE = new Vector2(0f, 3f);
         public float jetstreamRadius = 2f;
+        public bool jetstreamSmoothEdges = true;
+        public float jetstreamR = 2f;
+
+        [Space]
 
         public bool overrideVortex = false;
         public float vortexOmega = 2f;

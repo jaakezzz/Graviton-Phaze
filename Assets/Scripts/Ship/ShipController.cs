@@ -17,7 +17,7 @@ public class ShipController : MonoBehaviour
     [SerializeField] Canvas uiCanvas;           // Fly HUD canvas, used only to ignore touches on UI
 
     [Header("Lose / Bounds")]
-    [SerializeField] float cameraMargin = 1.5f;   // extra space beyond view before counting as OOB
+    [SerializeField] float cameraMargin = 0f;   // extra space beyond view before counting as OOB
 
     // -----------------------------
     // Thrust & motion feel
@@ -436,6 +436,34 @@ public class ShipController : MonoBehaviour
     // -----------------------------
     void Update()
     {
+#if UNITY_EDITOR
+        // Quick editor hack to simulate phone tilt using A and D via the New Input System
+        if (UnityEngine.InputSystem.Keyboard.current != null)
+        {
+            // 60 degrees of virtual tilt gives a moderate, comfortable turn rate 
+            // based on the turnRatePerDeg (6f). Adjust this to taste.
+            float simulatedTilt = 60f;
+            bool isSteering = false;
+
+            if (UnityEngine.InputSystem.Keyboard.current.aKey.isPressed)
+            {
+                tiltDegCurrent = -simulatedTilt;
+                isSteering = true;
+            }
+            else if (UnityEngine.InputSystem.Keyboard.current.dKey.isPressed)
+            {
+                tiltDegCurrent = simulatedTilt;
+                isSteering = true;
+            }
+
+            // Snap back to center if keys are released and we aren't receiving real gyro data
+            if (!isSteering && !hasBaseline)
+            {
+                tiltDegCurrent = 0f;
+            }
+        }
+#endif
+
         // Exponential smoothing towards the current tilt;  tiltSmooth controls response speed
         tiltDegFiltered = Mathf.Lerp(
             tiltDegFiltered,

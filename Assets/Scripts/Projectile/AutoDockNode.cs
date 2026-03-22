@@ -41,8 +41,15 @@ public class AutoDockNode : MonoBehaviour
     [Tooltip("Hide the arrow if the direction magnitude is below this.")]
     [SerializeField] float arrowHideThreshold = 0.001f;
 
-    [Tooltip("Fallback direction if no override/prefab info is available (up = 0°).")]
+    [Tooltip("Fallback direction if no override/prefab info is available (up = 0?).")]
     [SerializeField] Vector2 fallbackArrowDir = Vector2.up;
+
+    [Header("Jetstream Arrow Tinting")]
+    [Tooltip("Color gradient based on jetstream magnitude. Left edge is 0 force, right edge is maxExpectedJetstreamMag.")]
+    [SerializeField] Gradient jetArrowGradient;
+
+    [Tooltip("The magnitude that represents the far right of the color gradient (e.g., maximum thrust).")]
+    [SerializeField] float maxExpectedJetstreamMag = 10f;
 
     // -----------------------------
     // Acceptance toggles per type
@@ -87,6 +94,10 @@ public class AutoDockNode : MonoBehaviour
         public Vector2 E = new Vector2(0f, 3f);
         [Tooltip("Patch radius (for circular region checks).")]
         public float radius = 2f;
+        [Tooltip("Smoothed entry radius.")]
+        public bool smoothEdges = true;
+        [Tooltip("Smoothing factor.")]
+        public float R = 2f;
     }
 
     [System.Serializable]
@@ -262,6 +273,8 @@ public class AutoDockNode : MonoBehaviour
                     {
                         comp.E = jetstream.E;       // uniform accel inside
                         comp.radius = jetstream.radius;  // circular patch radius
+                        comp.smoothEdges = jetstream.smoothEdges;
+                        comp.R = jetstream.R;
                     }
                 }
                 break;
@@ -315,7 +328,7 @@ public class AutoDockNode : MonoBehaviour
         // Reset occupied state
         _lastDockedType = null;
 
-        // Anchor gone — fall back to override/prefab/fallback
+        // Anchor gone ? fall back to override/prefab/fallback
         RefreshDockVisuals();
         UpdateJetstreamArrowVisual();
     }
@@ -410,7 +423,7 @@ public class AutoDockNode : MonoBehaviour
     {
         if (!targetRenderer) return;
 
-        // If we’re occupied, show the occupied sprite for the docked type
+        // If we?re occupied, show the occupied sprite for the docked type
         if (IsOccupied && _lastDockedType.HasValue)
         {
             switch (_lastDockedType.Value)
@@ -471,7 +484,7 @@ public class AutoDockNode : MonoBehaviour
     }
 
     // Computes the intended jetstream direction and rotates/shows the arrow.
-    // Assumes arrow sprite points up (+Y) at 0°; we rotate from Vector2.up to dir.
+    // Assumes arrow sprite points up (+Y) at 0?; we rotate from Vector2.up to dir.
     void UpdateJetstreamArrowVisual()
     {
         if (jetArrow == null)
@@ -514,7 +527,8 @@ public class AutoDockNode : MonoBehaviour
         }
 
         // Show/hide based on magnitude
-        if (dir.sqrMagnitude < arrowHideThreshold * arrowHideThreshold)
+        float mag = dir.magnitude;
+        if (mag < arrowHideThreshold)
         {
             if (jetArrow.gameObject.activeSelf) jetArrow.gameObject.SetActive(false);
             return;
@@ -523,8 +537,17 @@ public class AutoDockNode : MonoBehaviour
         if (!jetArrow.gameObject.activeSelf) jetArrow.gameObject.SetActive(true);
 
         // Rotate arrow so that its "up" faces dir.
-        float ang = Vector2.SignedAngle(Vector2.up, dir.normalized);
+        // We can safely divide by 'mag' here because we just checked it against the hide threshold.
+        float ang = Vector2.SignedAngle(Vector2.up, dir / mag);
         jetArrow.transform.localRotation = Quaternion.Euler(0f, 0f, ang);
+
+        // Apply Color Tint
+        if (jetArrowGradient != null && maxExpectedJetstreamMag > 0f)
+        {
+            // Normalize the magnitude between 0 and 1 based on your expected maximum
+            float t = Mathf.Clamp01(mag / maxExpectedJetstreamMag);
+            jetArrow.color = jetArrowGradient.Evaluate(t);
+        }
     }
 
     // Safe audio helper: uses AudioManager if present, otherwise a one-shot 2D/3D at this node.

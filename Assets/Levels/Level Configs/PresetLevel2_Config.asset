@@ -13,37 +13,40 @@ MonoBehaviour:
   m_Name: PresetLevel2_Config
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
   levelID: 0
-  levelName: New Level
-  description: Level description goes here.
+  levelName: Stable Path
+  description: Repulsor well pushes away from goal near the end with limited fuel
+    left.
   minActionsForFiveStars: 2
   startFuel: 8
   playerSpawnPosition: {x: -1, y: -4.15}
   goalPosition: {x: 1, y: 4.44}
   gravityWells:
-  - position: {x: -1.2, y: 2}
-    strength: 12
+  - position: {x: 2, y: 3.7}
+    strength: -50
     epsilon: 0.3
-    accelClamp: 12
-  - position: {x: 0.6, y: -0.4}
-    strength: 15
+    accelClamp: 50
+  - position: {x: 1.1, y: -0.4}
+    strength: 36
     epsilon: 0.3
-    accelClamp: 15
+    accelClamp: 50
   dockNodes:
-  - position: {x: -0.8, y: 0.4}
+  - position: {x: 1, y: 3.2}
     acceptStabilizer: 1
     acceptRepulsor: 0
     acceptJetstream: 1
     acceptVortex: 0
     overrideStabilizer: 1
-    stabilizerU0: 7
+    stabilizerU0: 25
     stabilizerR: 2
-    stabilizerAccelClamp: 10
+    stabilizerAccelClamp: 50
     overrideRepulsor: 0
     repulsorS: 0
     repulsorEpsilon: 0
     overrideJetstream: 1
-    jetstreamE: {x: 2, y: 3}
+    jetstreamE: {x: 0, y: 3.2}
     jetstreamRadius: 2
+    jetstreamSmoothEdges: 1
+    jetstreamR: 2
     overrideVortex: 0
     vortexOmega: 0
     vortexRadius: 0

@@ -113,6 +113,37 @@ MonoBehaviour:
   jetArrow: {fileID: 2826325662982800410}
   arrowHideThreshold: 0.001
   fallbackArrowDir: {x: 0, y: 1}
+  jetArrowGradient:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 1}
+    key1: {r: 0, g: 0.8773585, b: 0.056355845, a: 1}
+    key2: {r: 1, g: 0.9523175, b: 0, a: 0}
+    key3: {r: 1, g: 0.3245015, b: 0.1509434, a: 0}
+    key4: {r: 0.3443396, g: 0, b: 0.08095893, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 867
+    ctime1: 6843
+    ctime2: 17733
+    ctime3: 30936
+    ctime4: 65535
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 2
+    m_ColorSpace: -1
+    m_NumColorKeys: 5
+    m_NumAlphaKeys: 2
+  maxExpectedJetstreamMag: 50
   acceptStabilizer: 1
   acceptRepulsor: 1
   acceptJetstream: 1
@@ -128,7 +159,7 @@ MonoBehaviour:
     epsilon: 0.1
   jetstream:
     apply: 0
-    E: {x: 0, y: 3}
+    E: {x: 0, y: 5}
     radius: 2
   vortex:
     apply: 0
@@ -254,7 +285,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: 7835618968195286003, guid: 5f21b4b46f4f1e3479fec5f2cccd4e1f, type: 3}
+  m_Sprite: {fileID: 6325225225957196057, guid: 42e1cab550edf264291bf93a6f1423b6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
