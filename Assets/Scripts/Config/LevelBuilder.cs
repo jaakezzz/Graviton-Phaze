@@ -81,7 +81,7 @@ public class LevelBuilder : MonoBehaviour
         // Move the existing PlayerSpawn marker so PhaseDirector can keep using it.
         if (playerSpawnMarker)
         {
-            playerSpawnMarker.position = levelConfig.playerSpawnPosition;
+            playerSpawnMarker.position = cfg.playerSpawnPosition;
         }
         else
         {

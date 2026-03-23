@@ -25,6 +25,9 @@ public class MenuManager : MonoBehaviour
     [Tooltip("Assign the Level Select canvas.")]
     [SerializeField] GameObject levelSelectCanvas;
 
+    [Tooltip("Assign the How To Play canvas.")]
+    [SerializeField] GameObject HelpCanvas;
+
     // ======================
     // Audio hooks
     // ======================
@@ -60,6 +63,14 @@ public class MenuManager : MonoBehaviour
         PlayBack();
         if (mainMenuCanvas) mainMenuCanvas.SetActive(true);
         if (levelSelectCanvas) levelSelectCanvas.SetActive(false);
+        if (HelpCanvas) HelpCanvas.SetActive(false);
+    }
+
+    public void ShowHowToPlay()
+    {
+        PlayClick();
+        if (mainMenuCanvas) mainMenuCanvas.SetActive(false);
+        if (HelpCanvas) HelpCanvas.SetActive(true);
     }
 
     public void ShowLevelSelect()

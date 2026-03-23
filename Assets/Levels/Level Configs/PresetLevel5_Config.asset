@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1177eb88c3090ff42a1574aa04dbc9f3, type: 3}
-  m_Name: PresetLevel1_Config
+  m_Name: PresetLevel5_Config
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
   levelID: 1
-  levelName: Death Well
-  description: Extremely strong singular gravity well.
+  levelName: Death Well 2
+  description: Extremely strong singular gravity well (no Repulsor).
   minActionsForFiveStars: 2
   startFuel: 5
   playerSpawnPosition: {x: 0, y: -4.15}
@@ -27,18 +27,18 @@ MonoBehaviour:
   dockNodes:
   - position: {x: 0.5, y: 1}
     acceptStabilizer: 1
-    acceptRepulsor: 1
+    acceptRepulsor: 0
     acceptJetstream: 1
-    acceptVortex: 0
+    acceptVortex: 1
     overrideStabilizer: 1
     stabilizerU0: 50
     stabilizerR: 4
     stabilizerAccelClamp: 50
-    overrideRepulsor: 1
-    repulsorS: -25
-    repulsorEpsilon: 0.1
+    overrideRepulsor: 0
+    repulsorS: 0
+    repulsorEpsilon: 0
     overrideJetstream: 1
-    jetstreamE: {x: -1, y: 8}
+    jetstreamE: {x: -2, y: 8}
     jetstreamRadius: 2
     jetstreamSmoothEdges: 0
     jetstreamR: 5

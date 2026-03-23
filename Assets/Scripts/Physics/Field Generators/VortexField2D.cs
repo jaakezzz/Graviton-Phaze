@@ -11,18 +11,25 @@ public class VortexField2D : MonoBehaviour
     public float aMax = 3f;      // accel clamp for comfort
     public bool clockwise = true; // flip swirl direction
 
-    // a = sign * omega * g(r) * (z? × v)
     public Vector2 AccelAt(Vector2 x, Vector2 v)
     {
+        // 1. Vector FROM center TO the ship
+        Vector2 r = x - (Vector2)transform.position;
+        float distSqr = r.sqrMagnitude;
+
         // Gaussian mask to localize the effect
-        Vector2 r = (Vector2)transform.position - x;
-        float g = Mathf.Exp(-r.sqrMagnitude / (R * R));
+        float g = Mathf.Exp(-distSqr / (R * R));
 
-        // Perpendicular to velocity (CCW for (-vy, +vx))
-        Vector2 perpV = new Vector2(-v.y, v.x);
-        float sgn = clockwise ? +1f : -1f;
+        // 2. Calculate the tangent vector based on position, not velocity
+        // (-r.y, r.x) creates a perfect Counter-Clockwise tangent around the center
+        // Magnitude naturally equals the distance 'r', creating a calm "eye" at the center.
+        Vector2 tangent = new Vector2(-r.y, r.x);
 
-        Vector2 a = sgn * omega * g * perpV;
+        // 3. Apply correct sign (-1 for Clockwise, +1 for CCW)
+        float sgn = clockwise ? -1f : 1f;
+
+        // 4. Calculate final acceleration
+        Vector2 a = sgn * omega * g * tangent;
 
         // Clamp
         float m = a.magnitude;

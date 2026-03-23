@@ -12,42 +12,112 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1177eb88c3090ff42a1574aa04dbc9f3, type: 3}
   m_Name: PresetLevel3_Config
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
-  levelID: 0
-  levelName: New Level
-  description: Level description goes here.
-  minActionsForFiveStars: 2
+  levelID: 3
+  levelName: Gravity Wall
+  description: A wall of increasingly stronger gravity wells pulls you to the left.
+  minActionsForFiveStars: 3
   startFuel: 8
-  playerSpawnPosition: {x: -1, y: -4.15}
+  playerSpawnPosition: {x: 0, y: -4.15}
   goalPosition: {x: 1, y: 4.44}
   gravityWells:
-  - position: {x: -1, y: 1}
+  - position: {x: -2.2, y: -4.2}
+    strength: 5
+    epsilon: 0.3
+    accelClamp: 50
+  - position: {x: -2.2, y: -3.2}
     strength: 10
     epsilon: 0.3
-    accelClamp: 10
-  - position: {x: -2, y: 2}
-    strength: 8
+    accelClamp: 50
+  - position: {x: -2.2, y: -2.2}
+    strength: 15
     epsilon: 0.3
-    accelClamp: 8
-  - position: {x: 2, y: -1}
-    strength: 13
+    accelClamp: 50
+  - position: {x: -2.2, y: -1.2}
+    strength: 20
     epsilon: 0.3
-    accelClamp: 13
+    accelClamp: 50
+  - position: {x: -2.2, y: -0.2}
+    strength: 25
+    epsilon: 0.3
+    accelClamp: 50
+  - position: {x: -2.2, y: 0.8}
+    strength: 30
+    epsilon: 0.3
+    accelClamp: 50
+  - position: {x: -2.2, y: 1.8}
+    strength: 35
+    epsilon: 0.3
+    accelClamp: 50
+  - position: {x: -2.2, y: 2.8}
+    strength: 40
+    epsilon: 0.3
+    accelClamp: 50
+  - position: {x: -2.2, y: 3.8}
+    strength: 45
+    epsilon: 0.3
+    accelClamp: 50
   dockNodes:
-  - position: {x: 0, y: 0}
+  - position: {x: -1.5, y: -3}
     acceptStabilizer: 1
     acceptRepulsor: 1
-    acceptJetstream: 1
+    acceptJetstream: 0
     acceptVortex: 0
-    overrideStabilizer: 0
-    stabilizerU0: 0
-    stabilizerR: 0
-    stabilizerAccelClamp: 0
-    overrideRepulsor: 0
-    repulsorS: 0
-    repulsorEpsilon: 0
-    overrideJetstream: 1
+    overrideStabilizer: 1
+    stabilizerU0: 25
+    stabilizerR: 2.5
+    stabilizerAccelClamp: 50
+    overrideRepulsor: 1
+    repulsorS: -40
+    repulsorEpsilon: 0.1
+    overrideJetstream: 0
     jetstreamE: {x: -5, y: -5}
     jetstreamRadius: 3
+    jetstreamSmoothEdges: 1
+    jetstreamR: 2
+    overrideVortex: 0
+    vortexOmega: 0
+    vortexRadius: 0
+    vortexAMax: 0
+    vortexClockwise: 0
+  - position: {x: 0, y: -0.25}
+    acceptStabilizer: 0
+    acceptRepulsor: 1
+    acceptJetstream: 0
+    acceptVortex: 1
+    overrideStabilizer: 1
+    stabilizerU0: 25
+    stabilizerR: 2.5
+    stabilizerAccelClamp: 50
+    overrideRepulsor: 1
+    repulsorS: -40
+    repulsorEpsilon: 0.1
+    overrideJetstream: 0
+    jetstreamE: {x: -5, y: -5}
+    jetstreamRadius: 3
+    jetstreamSmoothEdges: 1
+    jetstreamR: 2
+    overrideVortex: 1
+    vortexOmega: 15
+    vortexRadius: 1.5
+    vortexAMax: 50
+    vortexClockwise: 0
+  - position: {x: -1.5, y: 2.5}
+    acceptStabilizer: 1
+    acceptRepulsor: 1
+    acceptJetstream: 0
+    acceptVortex: 0
+    overrideStabilizer: 1
+    stabilizerU0: 25
+    stabilizerR: 2.5
+    stabilizerAccelClamp: 50
+    overrideRepulsor: 1
+    repulsorS: -40
+    repulsorEpsilon: 0.1
+    overrideJetstream: 0
+    jetstreamE: {x: -5, y: -5}
+    jetstreamRadius: 3
+    jetstreamSmoothEdges: 1
+    jetstreamR: 2
     overrideVortex: 0
     vortexOmega: 0
     vortexRadius: 0

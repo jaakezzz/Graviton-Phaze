@@ -12,36 +12,104 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1177eb88c3090ff42a1574aa04dbc9f3, type: 3}
   m_Name: PresetLevel4_Config
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
-  levelID: 0
-  levelName: New Level
-  description: Level description goes here.
-  minActionsForFiveStars: 2
-  startFuel: 8
-  playerSpawnPosition: {x: -1, y: -4.15}
-  goalPosition: {x: 1, y: 4.44}
+  levelID: 4
+  levelName: Jet Path
+  description: Fight against the Repulsor.
+  minActionsForFiveStars: 5
+  startFuel: 2
+  playerSpawnPosition: {x: 1, y: -4.15}
+  goalPosition: {x: -1, y: 4.44}
   gravityWells:
-  - position: {x: -2, y: 1}
-    strength: 20
+  - position: {x: 0, y: 4}
+    strength: -60
     epsilon: 0.3
-    accelClamp: 20
+    accelClamp: 50
   dockNodes:
-  - position: {x: -1, y: 0}
+  - position: {x: -1, y: -2}
     acceptStabilizer: 0
-    acceptRepulsor: 1
+    acceptRepulsor: 0
     acceptJetstream: 1
-    acceptVortex: 0
+    acceptVortex: 1
     overrideStabilizer: 0
     stabilizerU0: 0
     stabilizerR: 0
     stabilizerAccelClamp: 0
-    overrideRepulsor: 1
+    overrideRepulsor: 0
     repulsorS: -10
     repulsorEpsilon: 0.3
     overrideJetstream: 1
-    jetstreamE: {x: 5, y: -1}
+    jetstreamE: {x: -5, y: 0}
     jetstreamRadius: 2
-    overrideVortex: 0
-    vortexOmega: 0
-    vortexRadius: 0
-    vortexAMax: 0
+    jetstreamSmoothEdges: 0
+    jetstreamR: 2
+    overrideVortex: 1
+    vortexOmega: 10
+    vortexRadius: 2
+    vortexAMax: 25
     vortexClockwise: 0
+  - position: {x: 1.2, y: 0}
+    acceptStabilizer: 0
+    acceptRepulsor: 0
+    acceptJetstream: 1
+    acceptVortex: 1
+    overrideStabilizer: 0
+    stabilizerU0: 0
+    stabilizerR: 0
+    stabilizerAccelClamp: 0
+    overrideRepulsor: 0
+    repulsorS: -10
+    repulsorEpsilon: 0.3
+    overrideJetstream: 1
+    jetstreamE: {x: -5, y: 0}
+    jetstreamRadius: 2
+    jetstreamSmoothEdges: 0
+    jetstreamR: 2
+    overrideVortex: 1
+    vortexOmega: 10
+    vortexRadius: 2
+    vortexAMax: 33
+    vortexClockwise: 1
+  - position: {x: -1, y: 0.5}
+    acceptStabilizer: 0
+    acceptRepulsor: 0
+    acceptJetstream: 1
+    acceptVortex: 1
+    overrideStabilizer: 0
+    stabilizerU0: 0
+    stabilizerR: 0
+    stabilizerAccelClamp: 0
+    overrideRepulsor: 0
+    repulsorS: -10
+    repulsorEpsilon: 0.3
+    overrideJetstream: 1
+    jetstreamE: {x: 0, y: 25}
+    jetstreamRadius: 1.5
+    jetstreamSmoothEdges: 0
+    jetstreamR: 2
+    overrideVortex: 1
+    vortexOmega: 10
+    vortexRadius: 2
+    vortexAMax: 25
+    vortexClockwise: 1
+  - position: {x: -0.67, y: 3.67}
+    acceptStabilizer: 1
+    acceptRepulsor: 0
+    acceptJetstream: 0
+    acceptVortex: 1
+    overrideStabilizer: 1
+    stabilizerU0: 25
+    stabilizerR: 2
+    stabilizerAccelClamp: 25
+    overrideRepulsor: 0
+    repulsorS: -10
+    repulsorEpsilon: 0.3
+    overrideJetstream: 0
+    jetstreamE: {x: -2.5, y: 0.5}
+    jetstreamRadius: 1.5
+    jetstreamSmoothEdges: 0
+    jetstreamR: 2
+    overrideVortex: 1
+    vortexOmega: 10
+    vortexRadius: 2
+    vortexAMax: 25
+    vortexClockwise: 1

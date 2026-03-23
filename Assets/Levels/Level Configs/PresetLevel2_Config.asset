@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1177eb88c3090ff42a1574aa04dbc9f3, type: 3}
   m_Name: PresetLevel2_Config
   m_EditorClassIdentifier: Assembly-CSharp::LevelConfig
-  levelID: 0
-  levelName: Stable Path
+  levelID: 2
+  levelName: Stable Point
   description: Repulsor well pushes away from goal near the end with limited fuel
     left.
   minActionsForFiveStars: 2
   startFuel: 8
-  playerSpawnPosition: {x: -1, y: -4.15}
+  playerSpawnPosition: {x: 0, y: -4.15}
   goalPosition: {x: 1, y: 4.44}
   gravityWells:
   - position: {x: 2, y: 3.7}
