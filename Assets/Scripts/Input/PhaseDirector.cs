@@ -279,6 +279,10 @@ public class PhaseDirector : MonoBehaviour
         if (planGO) planGO.SetActive(false);
         if (flyGO) flyGO.SetActive(true);
 
+        // Force the ship back to the start line and lock it
+        var pos = flySpawn ? (Vector2)flySpawn.position : Vector2.zero;
+        shipHandler?.RestartAt(pos, resetFuel: true, relockUntilThrust: true);
+
         // HUDs
         if (planHUD) planHUD.SetActive(false);
         if (flyHUD) flyHUD.SetActive(true);

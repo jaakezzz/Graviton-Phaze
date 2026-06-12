@@ -29,6 +29,11 @@ public class ShipController : MonoBehaviour
     [SerializeField] float maxSpeed = 2.25f;        // Speed clamp to keep handling comfortable
     [SerializeField] float linearDrag = 0.02f;      // Gentle velocity damping each physics tick (comfort/friction)
 
+    [Header("Accessible Burst")]
+    [Tooltip("How much time the player has to tap twice. 0.4s is very generous!")]
+    [SerializeField] float doubleTapWindow = 0.4f;
+    float lastTapTime = -999f;
+
     // -----------------------------
     // Steering: phone tilt ? turn rate
     // -----------------------------
@@ -319,6 +324,20 @@ public class ShipController : MonoBehaviour
 
             // If the press started on any UI element, don't engage thrust.
             if (IsPointerOverUIAnywhere(screenPos)) { thrusting = false; return; }
+
+            // --- ACCESSIBLE DOUBLE TAP CHECK ---
+            // If the time since the last tap is within the double tap window...
+            if (Time.time - lastTapTime <= doubleTapWindow)
+            {
+                ExecuteBurst();
+                lastTapTime = -999f; // Reset so they don't accidentally triple-tap into two bursts
+            }
+            else
+            {
+                lastTapTime = Time.time; // Record this tap time to check against the next one
+            }
+            // -----------------------------------
+
             thrusting = true;                                       // Begin thrusting on press
 
             // AUDIO: thrust start blip
@@ -349,18 +368,19 @@ public class ShipController : MonoBehaviour
     }
 
     // Double-tap burst: instant impulse + fuel cost; also unlocks launch gate
-    public void OnBurst(InputAction.CallbackContext ctx)
+    // Isolate the logic so it can be triggered by a custom timer OR the Input System
+    void ExecuteBurst()
     {
-        if (!ctx.performed) return;                                 // Ignore unless interaction completed
-
-        // Block burst if the tap is over any UI (buttons, sliders, etc.)
-        Vector2 sp = GetScreenPos(ctx);
-        if (IsPointerOverUIAnywhere(sp)) return;
-
         if (fuel < burstCost) return;                               // Not enough fuel ? no burst
 
         fuel -= burstCost;                                          // Pay fuel cost
-        if (!launched) { launched = true; onFirstLaunch.Invoke(); if (sfxFirstLaunch) AudioManager.I?.PlaySFX(sfxFirstLaunch); } // count launch (+ SFX)
+        if (!launched)
+        {
+            launched = true;
+            onFirstLaunch.Invoke();
+            if (sfxFirstLaunch) AudioManager.I?.PlaySFX(sfxFirstLaunch);
+        }
+
         vel += HeadingDir() * burstImpulse;                         // Add forward impulse
         onFuelChanged.Invoke(fuel, startFuel);                      // Notify UI
 
@@ -369,6 +389,17 @@ public class ShipController : MonoBehaviour
 
         // AUDIO: burst
         if (sfxBurst) AudioManager.I?.PlaySFX(sfxBurst);
+    }
+
+    // Keep this mapped to your Input Actions just in case you ever use a gamepad button!
+    public void OnBurst(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.performed) return;
+
+        Vector2 sp = GetScreenPos(ctx);
+        if (IsPointerOverUIAnywhere(sp)) return;
+
+        ExecuteBurst();
     }
 
     // Gyro tilt ? computes a signed "roll" angle in the screen plane (XY) relative to baseline

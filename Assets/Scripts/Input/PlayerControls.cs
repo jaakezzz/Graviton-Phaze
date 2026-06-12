@@ -102,15 +102,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Burst"",
-                    ""type"": ""Button"",
-                    ""id"": ""c1786161-a248-45b3-94c8-3d05adfb4684"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
                     ""name"": ""Sustained"",
                     ""type"": ""Button"",
                     ""id"": ""8c190c69-9a20-4983-a245-664cb78a3047"",
@@ -138,17 +129,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Thrust"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""790df5d1-1780-4861-add9-c3de4f358726"",
-                    ""path"": ""<Touchscreen>/primaryTouch/tap"",
-                    ""interactions"": ""MultiTap"",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Burst"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -250,7 +230,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         // Fly
         m_Fly = asset.FindActionMap("Fly", throwIfNotFound: true);
         m_Fly_Thrust = m_Fly.FindAction("Thrust", throwIfNotFound: true);
-        m_Fly_Burst = m_Fly.FindAction("Burst", throwIfNotFound: true);
         m_Fly_Sustained = m_Fly.FindAction("Sustained", throwIfNotFound: true);
         m_Fly_Turn = m_Fly.FindAction("Turn", throwIfNotFound: true);
         // Plan
@@ -340,7 +319,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Fly;
     private List<IFlyActions> m_FlyActionsCallbackInterfaces = new List<IFlyActions>();
     private readonly InputAction m_Fly_Thrust;
-    private readonly InputAction m_Fly_Burst;
     private readonly InputAction m_Fly_Sustained;
     private readonly InputAction m_Fly_Turn;
     /// <summary>
@@ -358,10 +336,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Fly/Thrust".
         /// </summary>
         public InputAction @Thrust => m_Wrapper.m_Fly_Thrust;
-        /// <summary>
-        /// Provides access to the underlying input action "Fly/Burst".
-        /// </summary>
-        public InputAction @Burst => m_Wrapper.m_Fly_Burst;
         /// <summary>
         /// Provides access to the underlying input action "Fly/Sustained".
         /// </summary>
@@ -399,9 +373,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Thrust.started += instance.OnThrust;
             @Thrust.performed += instance.OnThrust;
             @Thrust.canceled += instance.OnThrust;
-            @Burst.started += instance.OnBurst;
-            @Burst.performed += instance.OnBurst;
-            @Burst.canceled += instance.OnBurst;
             @Sustained.started += instance.OnSustained;
             @Sustained.performed += instance.OnSustained;
             @Sustained.canceled += instance.OnSustained;
@@ -422,9 +393,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Thrust.started -= instance.OnThrust;
             @Thrust.performed -= instance.OnThrust;
             @Thrust.canceled -= instance.OnThrust;
-            @Burst.started -= instance.OnBurst;
-            @Burst.performed -= instance.OnBurst;
-            @Burst.canceled -= instance.OnBurst;
             @Sustained.started -= instance.OnSustained;
             @Sustained.performed -= instance.OnSustained;
             @Sustained.canceled -= instance.OnSustained;
@@ -596,13 +564,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnThrust(InputAction.CallbackContext context);
-        /// <summary>
-        /// Method invoked when associated input action "Burst" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnBurst(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "Sustained" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
